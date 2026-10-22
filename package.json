@@ -1,0 +1,11 @@
+{
+  "name": "duvidas-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Central de dúvidas: pergunte, explore respostas e salve o que quer aprender.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node scripts/serve.mjs"
+  }
+}

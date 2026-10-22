@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Uma central de dúvidas para perguntar, encontrar respostas e salvar o que você ainda quer aprender.">
+  <title>Dúvidas — pergunte, descubra, aprenda</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Dúvidas — voltar ao início">
+        <span class="brand-mark" aria-hidden="true">?</span>
+        <span class="brand-name">dúvidas<span class="brand-dot">.</span></span>
+      </a>
+
+      <nav class="nav" aria-label="Navegação principal">
+        <a class="nav-link is-active" href="#inicio">Início</a>
+        <a class="nav-link" href="#perguntas">Perguntas</a>
+        <a class="nav-link" href="#minhas-duvidas">Minhas dúvidas</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <span class="status-pill"><span class="status-dot" aria-hidden="true"></span>Online</span>
+        <a class="btn btn-ghost" href="#perguntar">Perguntar</a>
+      </div>
+    </header>
+
+    <main id="inicio">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="spark" aria-hidden="true">✦</span> Central de dúvidas</p>
+          <h1 id="hero-title">Oi! Qual é a<br><span class="accent">sua dúvida?</span></h1>
+          <p class="lede">Pergunte sem medo. Encontre respostas claras, salve o que ainda quer aprender e volte quando precisar.</p>
+
+          <form class="search" id="search-form" role="search">
+            <label class="sr-only" for="search-input">Buscar dúvidas</label>
+            <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              <path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <input id="search-input" name="q" type="search" placeholder="Digite sua dúvida..." autocomplete="off">
+            <button class="btn btn-primary" type="submit">Buscar</button>
+          </form>
+
+          <div class="chips" aria-label="Filtrar perguntas por tema">
+            <button class="chip is-active" type="button" data-category="todas" aria-pressed="true">Todas</button>
+            <button class="chip" type="button" data-category="estudos" aria-pressed="false">Estudos</button>
+            <button class="chip" type="button" data-category="trabalho" aria-pressed="false">Trabalho</button>
+            <button class="chip" type="button" data-category="tecnologia" aria-pressed="false">Tecnologia</button>
+            <button class="chip" type="button" data-category="vida" aria-pressed="false">Vida</button>
+          </div>
+        </div>
+
+        <aside class="hero-card" aria-label="Dúvida em destaque">
+          <div class="hero-card-top">
+            <span class="tag">Dúvida em destaque</span>
+            <span class="pulse" aria-hidden="true"></span>
+          </div>
+          <p class="hero-question">“Como encontro tempo para estudar com a rotina corrida?”</p>
+          <p class="hero-answer">Comece pequeno: 20 minutos por dia valem mais do que 3 horas no fim de semana. Escolha um horário fixo e proteja-o como um compromisso.</p>
+          <div class="hero-card-footer">
+            <span class="avatar" aria-hidden="true">A</span>
+            <span>Respondido por Ana · há 2 h</span>
+          </div>
+          <div class="hero-stats">
+            <div><strong>128</strong><span>dúvidas</span></div>
+            <div><strong>94%</strong><span>respondidas</span></div>
+            <div><strong>6</strong><span>temas</span></div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" id="perguntas" aria-labelledby="faq-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Respostas rápidas</p>
+            <h2 id="faq-title">Perguntas frequentes</h2>
+          </div>
+          <p class="muted" id="result-count" aria-live="polite">6 perguntas</p>
+        </div>
+
+        <div class="grid" id="faq-grid">
+          <article class="faq-card" data-category="estudos" data-search="como mantenho uma rotina de estudos consistente disciplina tempo">
+            <div class="faq-top"><span class="tag tag-estudos">Estudos</span><span class="faq-time">4 min</span></div>
+            <h3>Como mantenho uma rotina de estudos consistente?</h3>
+            <p>Defina um horário fixo, comece com blocos curtos e prepare o ambiente antes. A consistência nasce da repetição, não da motivação.</p>
+            <button class="faq-more" type="button" aria-expanded="false">Ver resposta completa <span aria-hidden="true">→</span></button>
+            <p class="faq-extra" hidden>Escolha dois ou três dias na semana e um horário que caiba na sua rotina real. Use um timer de 25 minutos, deixe o celular longe e anote onde parou. No fim da semana, revise o que funcionou e ajuste sem culpa.</p>
+          </article>
+
+          <article class="faq-card" data-category="estudos" data-search="teoria ou prática aprender melhor exercícios projeto">
+            <div class="faq-top"><span class="tag tag-estudos">Estudos</span><span class="faq-time">3 min</span></div>
+            <h3>Vale mais a pena aprender teoria ou praticar?</h3>
+            <p>Os dois, mas em ordens diferentes. A teoria dá direção; a prática revela o que você ainda não entendeu.</p>
+            <button class="faq-more" type="button" aria-expanded="false">Ver resposta completa <span aria-hidden="true">→</span></button>
+            <p class="faq-extra">Leia o conceito até conseguir explicá-lo com suas palavras. Depois faça um exercício ou projeto pequeno. Quando travar, volte à teoria com uma pergunta específica — esse ciclo rápido fixa muito mais do que horas de leitura passiva.</p>
+          </article>
+
+          <article class="faq-card" data-category="trabalho" data-search="pedir ajuda sem parecer perdido equipe comunicação trabalho">
+            <div class="faq-top"><span class="tag tag-trabalho">Trabalho</span><span class="faq-time">3 min</span></div>
+            <h3>Como peço ajuda sem parecer perdido?</h3>
+            <p>Mostre o que já tentou, onde travou e qual decisão precisa tomar. Isso transforma a ajuda em uma conversa objetiva.</p>
+            <button class="faq-more" type="button" aria-expanded="false">Ver resposta completa <span aria-hidden="true">→</span></button>
+            <p class="faq-extra">Use esta estrutura: “Tentei X e Y. O resultado foi Z. Minha hipótese é W. Você pode me ajudar a validar?”. Quem ajuda entende o contexto em segundos e você demonstra autonomia em vez de despreparo.</p>
+          </article>
+
+          <article class="faq-card" data-category="tecnologia" data-search="webgpu o que é quando usar gráficos renderização tecnologia">
+            <div class="faq-top"><span class="tag tag-tecnologia">Tecnologia</span><span class="faq-time">5 min</span></div>
+            <h3>O que é WebGPU e quando devo usar?</h3>
+            <p>É uma API moderna para acessar a GPU no navegador com mais controle e desempenho que o WebGL em cargas pesadas.</p>
+            <button class="faq-more" type="button" aria-expanded="false">Ver resposta completa <span aria-hidden="true">→</span></button>
+            <p class="faq-extra">Use WebGPU para visualizações 3D complexas, simulações, processamento de imagem e cargas de compute. Para páginas simples e efeitos leves, CSS ou WebGL continuam sendo escolhas mais compatíveis e simples.</p>
+          </article>
+
+          <article class="faq-card" data-category="trabalho" data-search="organizar tarefas da semana produtividade prioridades agenda">
+            <div class="faq-top"><span class="tag tag-trabalho">Trabalho</span><span class="faq-time">4 min</span></div>
+            <h3>Como organizar minhas tarefas da semana?</h3>
+            <p>Separe o que é prioridade do que é urgente, limite a lista a três entregas por dia e reserve tempo para imprevistos.</p>
+            <button class="faq-more" type="button" aria-expanded="false">Ver resposta completa <span aria-hidden="true">→</span></button>
+            <p class="faq-extra">Na sexta ou no domingo, escreva tudo o que precisa acontecer. Escolha no máximo três prioridades diárias e bloqueie a agenda. Deixe 20% do tempo livre para o que surge. No fim do dia, mova o que não coube em vez de acumular culpa.</p>
+          </article>
+
+          <article class="faq-card" data-category="vida" data-search="ansiedade antes da prova calma respiração vida">
+            <div class="faq-top"><span class="tag tag-vida">Vida</span><span class="faq-time">4 min</span></div>
+            <h3>Como lidar com a ansiedade antes de uma prova?</h3>
+            <p>Reduza a incerteza: revise o essencial, simule o formato da prova e cuide do corpo nas horas anteriores.</p>
+            <button class="faq-more" type="button" aria-expanded="false">Ver resposta completa <span aria-hidden="true">→</span></button>
+            <p class="faq-extra">Monte um resumo de uma página com os pontos principais e faça uma revisão curta. Durma, coma e chegue com antecedência. Durante a prova, respire devagar e comece pelas questões que você domina — o ritmo vem depois do primeiro acerto.</p>
+          </article>
+        </div>
+
+        <p class="empty" id="empty-state" hidden>Nenhuma pergunta encontrada. Tente outro termo ou escolha outro tema.</p>
+      </section>
+
+      <section class="section split" id="minhas-duvidas" aria-labelledby="doubts-title">
+        <div class="panel" id="perguntar">
+          <p class="eyebrow">Seu caderno</p>
+          <h2 id="doubts-title">Minhas dúvidas</h2>
+          <p class="muted">Anote o que ficou na cabeça. Tudo fica salvo neste navegador.</p>
+
+          <form class="doubt-form" id="doubt-form">
+            <label class="sr-only" for="doubt-input">Sua dúvida</label>
+            <textarea id="doubt-input" rows="3" maxlength="280" placeholder="Escreva sua dúvida aqui..." required></textarea>
+            <div class="form-row">
+              <label class="sr-only" for="doubt-category">Tema da dúvida</label>
+              <select id="doubt-category">
+                <option value="Estudos">Estudos</option>
+                <option value="Trabalho">Trabalho</option>
+                <option value="Tecnologia">Tecnologia</option>
+                <option value="Vida">Vida</option>
+              </select>
+              <button class="btn btn-primary" type="submit">Adicionar dúvida</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel list-panel" aria-live="polite">
+          <div class="list-head">
+            <h3>Suas anotações</h3>
+            <span class="badge" id="doubt-count">0</span>
+          </div>
+          <ul class="doubt-list" id="doubt-list"></ul>
+          <p class="empty" id="doubt-empty">Nenhuma dúvida por aqui ainda. A primeira pode ser a sua.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p><span class="brand-mark small" aria-hidden="true">?</span> Feito para quem não tem medo de perguntar.</p>
+      <p class="muted">Suas anotações ficam apenas neste navegador.</p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./app.js" defer></script>
+</body>
+</html>
