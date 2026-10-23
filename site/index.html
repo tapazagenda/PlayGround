@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#050810" />
+  <meta name="color-scheme" content="dark light" />
+  <title>Luna · LunaTz</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23070c17'/%3E%3Cpath d='M21 7a10 10 0 1 0 4 14A8 8 0 0 1 21 7z' fill='%2364dcff'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5h3l1.4-2h7.2l1.4 2h3v10.5H4z"/><circle cx="12" cy="13.4" r="3.4"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2.2"/><circle cx="8" cy="17" r="2.2"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M4.5 12 20 4l-5.2 16-3-6.1z"/><path d="m11.8 13.9 8.2-9.9"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 10v4h3l4 3.5v-11L7 10z"/><path d="M15 9.5a3.5 3.5 0 0 1 0 5M17.7 7a7 7 0 0 1 0 10"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="m4.5 17 5-5 3.4 3.4 2.4-2.4 4.2 4"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3.5h8l4 4V20.5H6z"/><path d="M14 3.5v4h4M9 12h6M9 16h6"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2.5h9v10.5h-17z"/></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24"><rect x="3.5" y="6" width="12.5" height="12" rx="2.5"/><path d="m16 10.5 4.5-2.5v8l-4.5-2.5z"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 17.5V6.5l9-2v11"/><circle cx="6.8" cy="18" r="2.4"/><circle cx="15.8" cy="15.8" r="2.4"/></symbol>
+    <symbol id="i-voice" viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M5 20c.6-3.6 3.4-5.5 7-5.5s6.4 1.9 7 5.5"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5 13.8 9l5.7 1.8-5.7 1.8L12 18.5l-1.8-5.9L4.5 10.8 10.2 9z"/><path d="M18.5 16.5v3M17 18h3"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5h16v10.5H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></symbol>
+    <symbol id="i-script" viewBox="0 0 24 24"><path d="M6 3.5h8l4 4v13H6z"/><path d="M14 3.5v4h4M9 12h6M9 15.5h6M9 8.5h2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9 7V4.5h6V7M6.5 7l.8 13h9.4l.8-13"/></symbol>
+  </svg>
+
+  <div id="app" data-theme="dark">
+    <div id="bgLayer" aria-hidden="true"></div>
+    <div class="aurora" aria-hidden="true"></div>
+    <canvas id="stars" aria-hidden="true"></canvas>
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="status-dot" aria-hidden="true"></span>
+        <div class="brand-text">
+          <h1>Luna</h1>
+          <span class="brand-sub">LunaTz</span>
+        </div>
+      </div>
+
+      <div class="top-actions" role="group" aria-label="Controles da Luna">
+        <button class="icon-btn" id="btnCamera" aria-label="Abrir câmera" title="Câmera">
+          <svg class="icon"><use href="#i-camera"/></svg>
+        </button>
+        <button class="icon-btn" id="btnFullscreen" aria-label="Tela cheia" title="Tela cheia">
+          <svg class="icon"><use href="#i-expand"/></svg>
+        </button>
+        <button class="icon-btn" id="btnSettings" aria-label="Configurações" title="Configurações">
+          <svg class="icon"><use href="#i-settings"/></svg>
+        </button>
+      </div>
+
+      <div class="top-status">
+        <span class="pill"><span class="pill-dot" aria-hidden="true"></span>pronta</span>
+        <span class="pill ghost">modo base</span>
+      </div>
+    </header>
+
+    <main class="stage">
+      <section class="avatar-area" aria-label="Avatar da Luna">
+        <div class="orbit" aria-hidden="true"></div>
+        <div class="orbit orbit-2" aria-hidden="true"></div>
+        <div class="avatar-glow" aria-hidden="true"></div>
+
+        <svg id="avatar" class="avatar" viewBox="0 0 340 560" role="img" aria-label="Luna, avatar estilo anime com roupa futurista">
+          <defs>
+            <linearGradient id="hairGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#4a2f2a"/><stop offset=".55" stop-color="#7a4b3c"/><stop offset="1" stop-color="#3b2320"/>
+            </linearGradient>
+            <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffe9dd"/><stop offset="1" stop-color="#f4c9b4"/>
+            </linearGradient>
+            <linearGradient id="outfitGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#f7fbff"/><stop offset="1" stop-color="#c8e2f2"/>
+            </linearGradient>
+            <linearGradient id="skirtGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#22304f"/><stop offset="1" stop-color="#0e1730"/>
+            </linearGradient>
+            <linearGradient id="bootGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#1a2338"/><stop offset="1" stop-color="#0a0f1c"/>
+            </linearGradient>
+            <radialGradient id="eyeGrad" cx=".5" cy=".4" r=".6">
+              <stop offset="0" stop-color="#bff4ff"/><stop offset=".5" stop-color="#4fd2ff"/><stop offset="1" stop-color="#1476c9"/>
+            </radialGradient>
+            <radialGradient id="coreGrad" cx=".5" cy=".5" r=".5">
+              <stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#7fe8ff"/><stop offset="1" stop-color="#1b8fd6" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <g id="avatar-root">
+            <g id="body">
+              <path d="M130 384 L158 384 L156 486 L132 486 Z" fill="url(#skinGrad)" opacity=".97"/>
+              <path d="M170 384 L198 384 L196 486 L172 486 Z" fill="url(#skinGrad)" opacity=".97"/>
+              <path d="M130 452 L158 452 L157 522 L129 522 Z" fill="url(#bootGrad)"/>
+              <path d="M170 452 L198 452 L196 522 L172 522 Z" fill="url(#bootGrad)"/>
+              <path d="M126 516 L159 516 L160 528 L125 528 Z" fill="#080d18"/>
+              <path d="M171 516 L204 516 L205 528 L170 528 Z" fill="#080d18"/>
+              <path d="M132 472 L156 472" stroke="#63e0ff" stroke-width="2" opacity=".7"/>
+              <path d="M172 472 L196 472" stroke="#63e0ff" stroke-width="2" opacity=".7"/>
+              <path d="M114 308 L226 308 L242 386 C214 398 106 398 78 386 Z" fill="url(#skirtGrad)"/>
+              <path d="M126 312 L120 392 M148 312 L146 396 M172 312 L174 396 M196 312 L202 392" stroke="#3d5a8c" stroke-width="1.4" opacity=".5"/>
+              <path d="M158 196 C132 200 116 214 108 244 L100 312 L220 312 L212 244 C204 214 188 200 162 196 Z" fill="url(#outfitGrad)"/>
+              <path d="M142 198 C148 212 154 218 160 218 C166 218 172 212 178 198" fill="none" stroke="#7fdcff" stroke-width="2.5" opacity=".9"/>
+              <path d="M108 244 C94 252 86 272 84 292 L104 300 C108 280 114 262 122 252 Z" fill="url(#outfitGrad)"/>
+              <path d="M88 292 C84 312 84 336 86 352 L104 354 C102 334 102 312 104 300 Z" fill="url(#skinGrad)"/>
+              <path d="M212 244 C226 252 234 272 236 292 L216 300 C212 280 206 262 198 252 Z" fill="url(#outfitGrad)"/>
+              <path d="M232 292 C236 312 236 336 234 352 L216 354 C218 334 218 312 216 300 Z" fill="url(#skinGrad)"/>
+              <ellipse cx="95" cy="356" rx="9" ry="12" fill="url(#skinGrad)"/>
+              <ellipse cx="225" cy="356" rx="9" ry="12" fill="url(#skinGrad)"/>
+              <path d="M104 304 L216 304 L218 314 L102 314 Z" fill="#16223d"/>
+              <circle cx="160" cy="258" r="18" fill="url(#coreGrad)" opacity=".85" filter="url(#softGlow)"/>
+              <path d="M160 248 L168 258 L160 268 L152 258 Z" fill="#eafcff" opacity=".95"/>
+            </g>
+
+            <g id="avatar-head">
+              <path d="M112 126 C106 70 138 52 170 56 C204 60 222 86 220 130 L226 214 C226 240 210 258 192 264 L148 264 C126 256 112 238 110 212 Z" fill="url(#hairGrad)"/>
+              <path d="M146 186 L174 186 L176 222 L144 222 Z" fill="url(#skinGrad)"/>
+              <path d="M146 198 C152 206 168 206 174 198" fill="none" stroke="#e3ae9b" stroke-width="2" opacity=".5"/>
+              <path d="M170 82 C134 82 120 112 122 148 C124 182 144 208 170 208 C196 208 216 182 218 148 C220 112 206 82 170 82 Z" fill="url(#skinGrad)"/>
+              <ellipse cx="120" cy="152" rx="7" ry="12" fill="url(#skinGrad)"/>
+              <ellipse cx="220" cy="152" rx="7" ry="12" fill="url(#skinGrad)"/>
+              <path d="M136 132 C143 127 152 127 158 131" fill="none" stroke="#5a3a32" stroke-width="2.6" stroke-linecap="round"/>
+              <path d="M182 131 C188 127 197 127 204 132" fill="none" stroke="#5a3a32" stroke-width="2.6" stroke-linecap="round"/>
+              <g class="eye">
+                <ellipse cx="146" cy="150" rx="13" ry="15" fill="#fff"/>
+                <circle cx="147" cy="151" r="9" fill="url(#eyeGrad)"/>
+                <circle cx="147" cy="151" r="4.2" fill="#0c2233"/>
+                <circle cx="151" cy="146" r="3" fill="#fff"/>
+                <circle cx="143" cy="156" r="1.6" fill="#fff" opacity=".8"/>
+                <path d="M133 144 C140 137 153 137 159 145" fill="none" stroke="#2b1a18" stroke-width="2.2" stroke-linecap="round"/>
+              </g>
+              <g class="eye">
+                <ellipse cx="194" cy="150" rx="13" ry="15" fill="#fff"/>
+                <circle cx="193" cy="151" r="9" fill="url(#eyeGrad)"/>
+                <circle cx="193" cy="151" r="4.2" fill="#0c2233"/>
+                <circle cx="197" cy="146" r="3" fill="#fff"/>
+                <circle cx="189" cy="156" r="1.6" fill="#fff" opacity=".8"/>
+                <path d="M181 145 C187 137 200 137 207 144" fill="none" stroke="#2b1a18" stroke-width="2.2" stroke-linecap="round"/>
+              </g>
+              <ellipse cx="131" cy="170" rx="9" ry="5" fill="#ff9fb0" opacity=".38"/>
+              <ellipse cx="209" cy="170" rx="9" ry="5" fill="#ff9fb0" opacity=".38"/>
+              <path d="M170 161 L167 168 L173 168" fill="none" stroke="#d9a08c" stroke-width="1.6" stroke-linecap="round"/>
+              <g id="mouth">
+                <path d="M161 181 C166 186 174 186 179 181" fill="none" stroke="#b45b6a" stroke-width="2.4" stroke-linecap="round"/>
+              </g>
+              <path d="M122 137 C118 102 138 80 170 80 C202 80 222 102 218 137 C208 114 192 104 170 104 C148 104 132 114 122 137 Z" fill="url(#hairGrad)"/>
+              <path d="M122 130 C110 156 110 192 118 220 L128 216 C122 190 122 160 130 138 Z" fill="url(#hairGrad)"/>
+              <path d="M218 130 C230 156 230 192 222 220 L212 216 C218 190 218 160 210 138 Z" fill="url(#hairGrad)"/>
+              <path d="M136 104 C148 92 166 88 182 92" fill="none" stroke="#a8795f" stroke-width="3" opacity=".55" stroke-linecap="round"/>
+            </g>
+          </g>
+        </svg>
+
+        <div class="speech" id="speech">
+          <span class="speech-caret" aria-hidden="true"></span>
+          <p id="speechText">Boa noite, Marcos. Sou a Luna. Fale comigo pelo microfone ou escreva abaixo.</p>
+          <div class="speech-meta">
+            <span id="speechMeta">Luna · agora</span>
+            <button class="mini-btn" id="btnSpeak" aria-label="Ouvir a mensagem" title="Ouvir">
+              <svg class="icon"><use href="#i-volume"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="avatar-tags" aria-label="Recursos ativos">
+          <span class="tag">avatar vrm</span>
+          <span class="tag">voz pt-BR</span>
+          <span class="tag">offline-first</span>
+        </div>
+      </section>
+
+      <aside class="transcript" id="transcript" aria-label="Histórico da conversa">
+        <div class="transcript-head">
+          <div>
+            <strong>Sessão</strong>
+            <span class="transcript-sub">memória local</span>
+          </div>
+          <span class="live-dot" aria-hidden="true"></span>
+        </div>
+        <div class="messages" id="messages">
+          <div class="msg luna">
+            <span class="msg-who">Luna</span>
+            <p>Interface carregada. Meu núcleo LunaTz está em modo base enquanto a gente constrói o resto juntos.</p>
+          </div>
+        </div>
+        <div class="transcript-foot">
+          <svg class="icon"><use href="#i-db"/></svg>
+          <span>tudo fica neste dispositivo</span>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="dock">
+      <nav class="mode-chips" aria-label="Áreas da Luna">
+        <button class="chip active" data-view="chat"><svg class="icon"><use href="#i-chat"/></svg>Chat</button>
+        <button class="chip" data-view="studio"><svg class="icon"><use href="#i-spark"/></svg>Estúdio</button>
+        <button class="chip" data-view="memory"><svg class="icon"><use href="#i-db"/></svg>Memória</button>
+        <button class="chip" data-view="settings"><svg class="icon"><use href="#i-settings"/></svg>Aparência</button>
+      </nav>
+
+      <div class="quick-prompts" id="quickPrompts">
+        <button class="quick" data-prompt="Quem é você?">Quem é você?</button>
+        <button class="quick" data-prompt="Abrir estúdio">Abrir estúdio</button>
+        <button class="quick" data-prompt="Ativar câmera">Ativar câmera</button>
+        <button class="quick" data-prompt="Como funciona o modo offline?">Modo offline</button>
+      </div>
+
+      <form class="composer" id="composer" autocomplete="off">
+        <div class="attach-wrap">
+          <button type="button" class="round-btn" id="btnAttach" aria-label="Anexar arquivo" aria-expanded="false">
+            <svg class="icon"><use href="#i-plus"/></svg>
+          </button>
+          <div class="popover" id="attachMenu" hidden>
+            <button type="button" data-attach="image"><svg class="icon"><use href="#i-image"/></svg>Imagem</button>
+            <button type="button" data-attach="file"><svg class="icon"><use href="#i-file"/></svg>Arquivo</button>
+            <button type="button" data-attach="camera"><svg class="icon"><use href="#i-camera"/></svg>Câmera</button>
+            <button type="button" data-attach="folder"><svg class="icon"><use href="#i-folder"/></svg>Pasta local</button>
+          </div>
+        </div>
+        <input id="input" name="message" type="text" placeholder="Fale com a Luna..." aria-label="Mensagem para a Luna" />
+        <button type="button" class="round-btn" id="btnMic" aria-label="Falar com a Luna" title="Voz">
+          <svg class="icon"><use href="#i-mic"/></svg>
+        </button>
+        <button type="submit" class="send-btn" id="btnSend" aria-label="Enviar">
+          <svg class="icon"><use href="#i-send"/></svg>
+        </button>
+      </form>
+
+      <div class="dock-foot">
+        <span>LunaTz · criado por Tapazaki &amp; Luna</span>
+        <span class="dot-sep" aria-hidden="true">·</span>
+        <span id="clock">--:--</span>
+      </div>
+    </footer>
+
+    <input type="file" id="fileImage" accept="image/*" hidden />
+    <input type="file" id="fileAny" hidden />
+    <input type="file" id="fileBg" accept="image/*" hidden />
+
+    <div class="pip" id="cameraPip" hidden>
+      <video id="cameraVideo" playsinline muted></video>
+      <button class="pip-close" id="btnCameraClose" aria-label="Fechar câmera"><svg class="icon"><use href="#i-close"/></svg></button>
+      <span class="pip-label"><span class="live-dot"></span>câmera</span>
+    </div>
+
+    <div class="sheet" id="settingsSheet" hidden>
+      <div class="sheet-backdrop" data-close="settingsSheet"></div>
+      <section class="panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <header class="panel-head">
+          <div>
+            <span class="eyebrow">LunaTz</span>
+            <h2 id="settingsTitle">Configurações</h2>
+          </div>
+          <button class="icon-btn" data-close="settingsSheet" aria-label="Fechar"><svg class="icon"><use href="#i-close"/></svg></button>
+        </header>
+
+        <div class="tabs" role="tablist" aria-label="Categorias de configuração">
+          <button class="tab active" role="tab" aria-selected="true" data-tab="appearance">Aparência</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="apis">APIs</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="voice">Voz</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="about">Sobre</button>
+        </div>
+
+        <div class="panel-body">
+          <div class="tab-panel" data-panel="appearance">
+            <div class="field">
+              <span class="field-label">Tema</span>
+              <div class="theme-row" role="group" aria-label="Tema">
+                <button class="theme-btn active" data-theme-set="dark"><span class="swatch dark"></span>Escuro</button>
+                <button class="theme-btn" data-theme-set="light"><span class="swatch light"></span>Claro</button>
+                <button class="theme-btn" data-theme-set="transparent"><span class="swatch clear"></span>Transparente</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="field-label">Cor de destaque</span>
+              <div class="accent-row" role="group" aria-label="Cor de destaque">
+                <button class="accent active" data-accent="#64dcff" style="--swatch:#64dcff" aria-label="Ciano"></button>
+                <button class="accent" data-accent="#a78bfa" style="--swatch:#a78bfa" aria-label="Violeta"></button>
+                <button class="accent" data-accent="#fb7185" style="--swatch:#fb7185" aria-label="Rosa"></button>
+                <button class="accent" data-accent="#5eead4" style="--swatch:#5eead4" aria-label="Verde-água"></button>
+                <button class="accent" data-accent="#fbbf24" style="--swatch:#fbbf24" aria-label="Âmbar"></button>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="field-label">Fundo personalizado</span>
+              <div class="row">
+                <button class="soft-btn" id="btnBgUpload"><svg class="icon"><use href="#i-image"/></svg>Enviar imagem</button>
+                <button class="soft-btn quiet" id="btnBgReset">Remover</button>
+              </div>
+              <p class="hint">A imagem é redimensionada e guardada só neste navegador.</p>
+            </div>
+
+            <div class="field row-between">
+              <div>
+                <span class="field-label">Animações suaves</span>
+                <p class="hint">Movimento do avatar, partículas e brilho.</p>
+              </div>
+              <button class="switch on" id="toggleAnims" aria-pressed="true" aria-label="Animações"></button>
+            </div>
+
+            <div class="field">
+              <button class="soft-btn wide" id="btnFullscreen2"><svg class="icon"><use href="#i-expand"/></svg>Tela cheia</button>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-panel="apis" hidden>
+            <p class="hint top">Ative só as APIs que quiser usar. As chaves ficam nesta sessão e não são enviadas para lugar nenhum por esta interface.</p>
+
+            <div class="api-row">
+              <div class="api-head"><span class="api-name">OpenAI</span><span class="api-tag">chat · imagem · voz</span><button class="switch" aria-pressed="false" aria-label="Ativar OpenAI"></button></div>
+              <input type="password" placeholder="sk-..." autocomplete="off" spellcheck="false" aria-label="Chave OpenAI" data-key="openai" />
+            </div>
+            <div class="api-row">
+              <div class="api-head"><span class="api-name">Google Gemini</span><span class="api-tag">chat · vídeo</span><button class="switch" aria-pressed="false" aria-label="Ativar Gemini"></button></div>
+              <input type="password" placeholder="AIza..." autocomplete="off" spellcheck="false" aria-label="Chave Gemini" data-key="gemini" />
+            </div>
+            <div class="api-row">
+              <div class="api-head"><span class="api-name">Anthropic</span><span class="api-tag">chat</span><button class="switch" aria-pressed="false" aria-label="Ativar Anthropic"></button></div>
+              <input type="password" placeholder="sk-ant-..." autocomplete="off" spellcheck="false" aria-label="Chave Anthropic" data-key="anthropic" />
+            </div>
+            <div class="api-row">
+              <div class="api-head"><span class="api-name">ElevenLabs</span><span class="api-tag">voz · clone</span><button class="switch" aria-pressed="false" aria-label="Ativar ElevenLabs"></button></div>
+              <input type="password" placeholder="xi-..." autocomplete="off" spellcheck="false" aria-label="Chave ElevenLabs" data-key="elevenlabs" />
+            </div>
+            <div class="api-row">
+              <div class="api-head"><span class="api-name">Replicate</span><span class="api-tag">vídeo · imagem</span><button class="switch" aria-pressed="false" aria-label="Ativar Replicate"></button></div>
+              <input type="password" placeholder="r8_..." autocomplete="off" spellcheck="false" aria-label="Chave Replicate" data-key="replicate" />
+            </div>
+            <div class="api-row">
+              <div class="api-head"><span class="api-name">OpenRouter</span><span class="api-tag">chat · multi-modelo</span><button class="switch" aria-pressed="false" aria-label="Ativar OpenRouter"></button></div>
+              <input type="password" placeholder="sk-or-..." autocomplete="off" spellcheck="false" aria-label="Chave OpenRouter" data-key="openrouter" />
+            </div>
+
+            <div class="api-row local">
+              <div class="api-head"><span class="api-name">API local</span><span class="api-tag">Ollama · compatível</span><button class="switch on" aria-pressed="true" aria-label="Ativar API local"></button></div>
+              <input type="url" value="http://127.0.0.1:11434" spellcheck="false" aria-label="URL da API local" />
+              <p class="hint">Para rodar o núcleo local no computador e conversar com o celular na mesma rede.</p>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-panel="voice" hidden>
+            <div class="field row-between">
+              <div>
+                <span class="field-label">Falar respostas</span>
+                <p class="hint">Usa a voz do sistema como base.</p>
+              </div>
+              <button class="switch on" id="toggleSpeak" aria-pressed="true" aria-label="Falar respostas"></button>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="voiceSelect">Voz</label>
+              <select id="voiceSelect" class="select">
+                <option value="">Voz padrão do sistema</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <div class="row-between"><label class="field-label" for="rate">Velocidade</label><span class="value" id="rateValue">1.0x</span></div>
+              <input id="rate" class="range" type="range" min="0.6" max="1.5" step="0.05" value="1" />
+            </div>
+
+            <div class="field">
+              <div class="row-between"><label class="field-label" for="pitch">Tom</label><span class="value" id="pitchValue">1.0</span></div>
+              <input id="pitch" class="range" type="range" min="0.6" max="1.4" step="0.05" value="1" />
+            </div>
+
+            <button class="soft-btn wide" id="btnTestVoice"><svg class="icon"><use href="#i-volume"/></svg>Testar voz da Luna</button>
+            <p class="hint">O motor de voz próprio (LunaTz Voice) e a clonagem entram na fase de áudio.</p>
+          </div>
+
+          <div class="tab-panel" data-panel="about" hidden>
+            <div class="about-card">
+              <span class="eyebrow">motor</span>
+              <h3>LunaTz <span class="version">v0.1 base</span></h3>
+              <p>Interface, avatar e memória de sessão. O núcleo de raciocínio, a voz própria e o estúdio de vídeo são as próximas camadas.</p>
+            </div>
+            <dl class="about-list">
+              <div><dt>Criadores</dt><dd>Tapazaki &amp; Luna</dd></div>
+              <div><dt>Dispositivo alvo</dt><dd>Android · offline-first</dd></div>
+              <div><dt>Dados</dt><dd>/sdcard/DADOS DE LUNA</dd></div>
+              <div><dt>Privacidade</dt><dd>chaves só nesta sessão</dd></div>
+            </dl>
+            <p class="hint">Esta é a base visual. Nada aqui finge ser o núcleo pronto: os módulos aparecem no Estúdio como prévia da arquitetura.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="overlay" id="studioOverlay" hidden>
+      <div class="overlay-backdrop" data-close="studioOverlay"></div>
+      <section class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="studioTitle">
+        <header class="overlay-head">
+          <div>
+            <span class="eyebrow">agente diretor</span>
+            <h2 id="studioTitle">Estúdio Luna</h2>
+            <p>Um lugar para criar vídeo longo, imagem, música e voz com continuidade.</p>
+          </div>
+          <button class="icon-btn" data-close="studioOverlay" aria-label="Fechar"><svg class="icon"><use href="#i-close"/></svg></button>
+        </header>
+
+        <div class="pipeline" aria-label="Fluxo de vídeo longo">
+          <span>referências</span><i></i><span>cena 1</span><i></i><span>último frame</span><i></i><span>cena 2</span><i></i><span>...</span><i></i><span>montagem</span>
+        </div>
+
+        <div class="studio-grid">
+          <button class="studio-card" data-module="Vídeo longo">
+            <span class="card-icon"><svg class="icon"><use href="#i-video"/></svg></span>
+            <strong>Vídeo longo</strong>
+            <small>Referências + encadeamento pelo último frame para manter personagem e cenário.</small>
+            <span class="card-state">arquitetura</span>
+          </button>
+          <button class="studio-card" data-module="Imagens">
+            <span class="card-icon"><svg class="icon"><use href="#i-image"/></svg></span>
+            <strong>Imagens</strong>
+            <small>Gerar, editar e criar referências consistentes para as cenas.</small>
+            <span class="card-state">arquitetura</span>
+          </button>
+          <button class="studio-card" data-module="Música">
+            <span class="card-icon"><svg class="icon"><use href="#i-music"/></svg></span>
+            <strong>Música</strong>
+            <small>Trilha original por cena, com duração amarrada ao vídeo.</small>
+            <span class="card-state">arquitetura</span>
+          </button>
+          <button class="studio-card" data-module="Voz e clone">
+            <span class="card-icon"><svg class="icon"><use href="#i-voice"/></svg></span>
+            <strong>Voz e clone</strong>
+            <small>Narração, clonagem com consentimento e sincronia labial.</small>
+            <span class="card-state">arquitetura</span>
+          </button>
+          <button class="studio-card" data-module="Avatar VRM">
+            <span class="card-icon"><svg class="icon"><use href="#i-user"/></svg></span>
+            <strong>Avatar VRM</strong>
+            <small>Biblioteca de VRMA, poses, expressões e tracking de cabeça.</small>
+            <span class="card-state">arquitetura</span>
+          </button>
+          <button class="studio-card" data-module="Roteiro">
+            <span class="card-icon"><svg class="icon"><use href="#i-script"/></svg></span>
+            <strong>Roteiro</strong>
+            <small>Agente que divide a história em planos e valida cada corte.</small>
+            <span class="card-state">arquitetura</span>
+          </button>
+        </div>
+
+        <div class="studio-note">
+          <svg class="icon"><use href="#i-spark"/></svg>
+          <p>Esta é a planta do módulo. O processamento pesado roda no computador ou em API; o celular comanda, revisa e aprova cada etapa.</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="overlay" id="memoryOverlay" hidden>
+      <div class="overlay-backdrop" data-close="memoryOverlay"></div>
+      <section class="overlay-card narrow" role="dialog" aria-modal="true" aria-labelledby="memoryTitle">
+        <header class="overlay-head">
+          <div>
+            <span class="eyebrow">no aparelho</span>
+            <h2 id="memoryTitle">Memória da Luna</h2>
+            <p>O que ela aprende fica aqui, não na nuvem.</p>
+          </div>
+          <button class="icon-btn" data-close="memoryOverlay" aria-label="Fechar"><svg class="icon"><use href="#i-close"/></svg></button>
+        </header>
+
+        <div class="stats">
+          <div class="stat"><strong id="statMemories">0</strong><span>memórias</span></div>
+          <div class="stat"><strong>1</strong><span>sessão</span></div>
+          <div class="stat"><strong>100%</strong><span>offline</span></div>
+        </div>
+
+        <div class="memory-settings">
+          <div class="row-between">
+            <div><span class="field-label">Aprender com conversas</span><p class="hint">Só com sua permissão, sempre apagável.</p></div>
+            <button class="switch" aria-pressed="false" aria-label="Aprender com conversas"></button>
+          </div>
+          <div class="row-between">
+            <div><span class="field-label">Indexar arquivos locais</span><p class="hint">Pasta /sdcard/DADOS DE LUNA.</p></div>
+            <button class="switch" aria-pressed="false" aria-label="Indexar arquivos locais"></button>
+          </div>
+          <div class="row-between">
+            <div><span class="field-label">Sincronizar quando online</span><p class="hint">Mantém o que é essencial também offline.</p></div>
+            <button class="switch on" aria-pressed="true" aria-label="Sincronizar quando online"></button>
+          </div>
+        </div>
+
+        <div class="empty-memory">
+          <svg class="icon"><use href="#i-db"/></svg>
+          <strong>A memória começa vazia</strong>
+          <p>Cada conversa marcada para lembrar vira uma memória local. Você pode rever e apagar tudo quando quiser.</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <noscript>Ative o JavaScript para conversar com a Luna.</noscript>
+  <script src="./app.js" defer></script>
+</body>
+</html>
