@@ -1,0 +1,12 @@
+# Gradle / Android
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Assets do Luna sao baixados no build por scripts/fetch-assets.sh
+app/src/main/assets/luna/
