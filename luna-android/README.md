@@ -39,6 +39,14 @@ gradle wrapper --gradle-version 8.7
 # saída: app/build/outputs/apk/debug/app-debug.apk
 ```
 
+### Sobre os assets
+
+O CDN original (`static.teamily.ai/sites/...`) exige token de acesso e responde
+**403** para runners do GitHub Actions. Por isso `scripts/fetch-assets.sh` baixa
+de um espelho público (filebin) e só cai para o CDN original como fallback.
+Se o espelho expirar, suba os 5 arquivos de novo e atualize a variável `MIRROR`
+no script.
+
 ## Notas técnicas
 
 - `minSdk 24`, `targetSdk 34`, `compileSdk 34`, AGP 8.5.2, Gradle 8.7, JDK 17.
@@ -53,9 +61,14 @@ gradle wrapper --gradle-version 8.7
 
 ### API local (Ollama em `http://127.0.0.1:11434`)
 
-A página roda em `file:///android_asset/...`, ou seja, **não é HTTPS** — o
-`mixedContentBlocked()` do HTML (`IS_HTTPS && isHttpUrl`) retorna `false`, então
-nada é bloqueado por conteúdo misto. O WebView também está com
+A página roda em `file:///android_asset/...`, ou seja, **não é HTTPS**. No HTML:
+
+```js
+var IS_HTTPS = (location.protocol === "https:");          // false em file://
+function mixedContentBlocked(u){ return IS_HTTPS && isHttpUrl(u); }  // sempre false
+```
+
+Logo nada é bloqueado por conteúdo misto, e o WebView também está com
 `MIXED_CONTENT_ALWAYS_ALLOW`.
 
 O que ainda pode barrar é **CORS**: a origem enviada é `null` (file://). No
