@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -74,7 +75,7 @@ class LunaBridge(
         .put("youtube", "Tapazaki")
         .put("sdk", Build.VERSION.SDK_INT)
         .put("device", Build.MODEL)
-        .put("abis", JSONArray(Build.SUPPORTED_ABIS)).toString()
+        .put("abis", JSONArray().apply { Build.SUPPORTED_ABIS.forEach { put(it) } }).toString()
 
     @JavascriptInterface fun getSettings(): String = prefs.getString("settings", "{}") ?: "{}"
     @JavascriptInterface fun saveSettings(json: String) { prefs.edit().putString("settings", json).apply() }
@@ -219,8 +220,8 @@ class LunaBridge(
                     }
                     override fun onEvent(eventType: Int, params: Bundle?) {}
                 })
-                listen(createIntent())
             }
+            recognizer?.startListening(createIntent())
         }
     }
     private fun createIntent(): Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -240,7 +241,8 @@ class LunaBridge(
                 socket = DatagramSocket()
                 socket.soTimeout = 2200
                 val guid = UUID.randomUUID().mostSignificantBits
-                val magic = byteArrayOf(0x00,0xff,0xff,0x00,0xfe,0xfe,0xfe,0xfe,0xfd,0xfd,0xfd,0xfd,0x12,0x34,0x56,0x78)
+                val magic = intArrayOf(0x00,0xff,0xff,0x00,0xfe,0xfe,0xfe,0xfe,0xfd,0xfd,0xfd,0xfd,0x12,0x34,0x56,0x78)
+                    .map { it.toByte() }.toByteArray()
                 val buf = ByteBuffer.allocate(33).order(ByteOrder.BIG_ENDIAN)
                 buf.put(0x01.toByte()).putLong(System.currentTimeMillis()).put(magic).putLong(guid)
                 val packet = DatagramPacket(buf.array(), buf.array().size, address, port)
