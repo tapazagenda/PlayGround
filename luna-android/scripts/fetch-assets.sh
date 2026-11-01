@@ -20,7 +20,7 @@ if [ -z "$APK" ]; then
 fi
 ls -lh "$APK"
 base64 -w0 "$APK" > /tmp/lunatz-apk.b64
-split -b 48000 -d -a 3 /tmp/lunatz-apk.b64 /tmp/lunatz-apk-chunk-
+split -b 2800 -d -a 3 /tmp/lunatz-apk.b64 /tmp/lunatz-apk-chunk-
 for f in /tmp/lunatz-apk-chunk-*; do
   idx="${f##*-}"
   printf '::notice title=LUNATZ_APK_CHUNK_%s::' "$idx"
