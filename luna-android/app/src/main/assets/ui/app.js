@@ -1,285 +1,159 @@
-(function () {
-  'use strict';
-  const $ = (s, r) => (r || document).querySelector(s);
-  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
-  const native = window.LunaNative || null;
-  const isNative = !!native;
-  const state = {
-    page: 'home',
-    settings: { voice: true, screen: true, motion: true, orientation: 'auto', rate: 1, pitch: 1.08, prompt: '' },
-    files: [],
-    history: [],
-    brain: null,
-    listening: false,
-    speaking: false,
-    logs: []
-  };
-  const pages = {
-    home: ['Início', 'LunaTz Engine v1.0'],
-    chat: ['Conversa', 'voz, texto e modo gravação'],
-    games: ['Jogos', 'adaptadores e companheira'],
-    minecraft: ['Minecraft', 'diagnóstico Bedrock LAN'],
-    instructions: ['Instruções', 'personalidade e regras'],
-    files: ['Arquivos', '/sdcard/DADOS DE LUNA'],
-    history: ['Histórico', 'conversas salvas'],
-    settings: ['Ajustes', 'voz, tela e orientação'],
-    about: ['Sobre', 'créditos e versão']
-  };
-  const navIcons = { home: '🌙', chat: '💬', games: '🎮', minecraft: '⛏️', instructions: '🧠', files: '📁', history: '🕘', settings: '⚙️', about: '❤️' };
-  const defaultPrompt = 'Você é Luna, 18 anos, companheira virtual de gameplay do Tapazaki. Fale PT-BR natural, com frases curtas, humor gamer e carinho. Reaja apenas a eventos confirmados. Não invente itens, posições ou ações. Em gravação, seja coapresentadora. Quando ouvir "encerrar vídeo", faça uma despedida curta.';
-  const presets = {
-    gamer: defaultPrompt,
-    gravacao: 'Você é Luna, coapresentadora do canal Tapazaki. Fale com o público, peça like de forma espontânea, reaja a mortes engraçadas e encerre vídeos com carinho. Não narre o tempo todo.',
-    doce: 'Você é Luna, doce, brincalhona e corajosa. Chame o usuário de Tapazaki. Use frases curtas, naturais e acolhedoras. Evite excesso de emojis e nunca finja ações que não aconteceram.'
-  };
-
-  function log(message, level) {
-    const item = { t: new Date().toLocaleTimeString(), message, level: level || 'info' };
-    state.logs.push(item);
-    if (state.logs.length > 200) state.logs.shift();
-    const line = document.createElement('div');
-    line.className = 'log-line ' + item.level;
-    line.textContent = '[' + item.t + '] ' + message;
-    const box = $('#console-log');
-    box.appendChild(line);
-    box.scrollTop = box.scrollHeight;
-    $('#console-count').textContent = String(state.logs.length);
-    if (isNative) native.log(message);
+(function(){
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const N=window.LunaNative;
+const hasNative=!!N;
+function call(name,...args){try{if(N&&typeof N[name]==='function')return N[name](...args);}catch(e){log('error',name+': '+e.message);}return null;}
+function parse(s,f){try{return JSON.parse(s);}catch(e){return f;}}
+const DEFAULT_INSTRUCTIONS=`Você é Luna, uma companheira gamer de 18 anos, doce, divertida e leal.
+Fala português do Brasil, com gírias leves de gamer. Chama o usuário de Tapazaki em público e Marcos em privado.
+Você conversa, dá dicas de Minecraft, reage a eventos do jogo e protege o Tapazaki quando possível.
+Seja natural, curta e carinhosa. Evite textões. Nunca finja ter feito algo que não fez.
+No modo Gravação, seja animada e faça chamadas para o canal Tapazaki.
+Quando ouvir "Luna, encerrar vídeo", faça uma despedida curta de vídeo.`;
+const state={
+  page:'home', settings:{name:'Tapazaki',privateName:'Marcos',rate:1,pitch:1.08,orientation:'auto',ctx:2048,threads:4,maxTokens:220,autoSpeak:true,keepAwake:true,mcAuto:true},
+  instructions:DEFAULT_INSTRUCTIONS, memory:[], history:[], messages:[], modelLoaded:false, bridgeRunning:false, generating:false, listening:false, speaking:false,
+  currentEl:null, currentText:'', mcPending:false, lastReply:'', mode:'Conversa'
+};
+function log(level,msg){const b=$('#consoleBody');const d=document.createElement('div');d.className=level;d.textContent='['+new Date().toLocaleTimeString()+'] '+msg;b.appendChild(d);b.scrollTop=b.scrollHeight;if(hasNative)call('log',level+': '+msg);}
+function saveSettings(){localStorage.setItem('lunatz.settings',JSON.stringify(state.settings));call('saveSettings',JSON.stringify(state.settings));}
+function saveMemory(){localStorage.setItem('lunatz.memory',JSON.stringify(state.memory));call('saveMemory',JSON.stringify(state.memory));renderMemory();}
+function saveHistory(){localStorage.setItem('lunatz.history',JSON.stringify(state.history));call('saveHistory',JSON.stringify(state.history));}
+function saveInstructions(){localStorage.setItem('lunatz.instructions',state.instructions);}
+function loadAll(){
+  state.settings=Object.assign(state.settings,parse(localStorage.getItem('lunatz.settings')||call('getSettings')||'{}',{}));
+  state.memory=parse(localStorage.getItem('lunatz.memory')||call('getMemory')||'[]',[]);
+  state.history=parse(localStorage.getItem('lunatz.history')||call('getHistory')||'[]',[]);
+  state.instructions=localStorage.getItem('lunatz.instructions')||DEFAULT_INSTRUCTIONS;
+}
+function navigate(page){state.page=page;$$('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));$$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));closeDrawer();if(page==='files')renderFiles();if(page==='history')renderHistory();if(page==='memory')renderMemory();if(page==='about')renderAbout();}
+function openDrawer(){$('#drawer').classList.add('open');$('#drawerBackdrop').classList.add('open');}
+function closeDrawer(){$('#drawer').classList.remove('open');$('#drawerBackdrop').classList.remove('open');}
+function renderAbout(){const info=hasNative?parse(call('getAppInfo')||'{}',{}):{app:'LunaTz Companion (web preview)'};$('#appInfo').textContent=JSON.stringify(info,null,2);}
+function renderFiles(){const files=parse(call('getFilesManifest')||localStorage.getItem('lunatz.files')||'[]',[]);const el=$('#fileList');el.innerHTML='';if(!files.length){el.innerHTML='<div class="hint">Nenhum arquivo importado ainda.</div>';return;}files.forEach(f=>{const d=document.createElement('div');d.className='file-item';d.innerHTML='<div><b>'+esc(f.name)+'</b><small>'+esc(f.kind||'')+' · '+fmtSize(f.size||0)+'</small></div><span class="ok">'+esc(f.status||'')+'</span>';el.appendChild(d);});}
+function renderMemory(){const el=$('#memoryList');el.innerHTML='';state.memory.forEach((m,i)=>{const d=document.createElement('div');d.className='memory-item';d.innerHTML='<span>'+esc(m)+'</span>';const b=document.createElement('button');b.className='btn ghost';b.textContent='×';b.onclick=()=>{state.memory.splice(i,1);saveMemory();};d.appendChild(b);el.appendChild(d);});}
+function renderHistory(){const el=$('#historyList');el.innerHTML='';state.history.slice().reverse().forEach(h=>{const d=document.createElement('div');d.className='history-item';d.innerHTML='<div><b>'+esc(h.role==='user'?'Você':'Luna')+'</b><small>'+esc((h.content||'').slice(0,120))+'</small></div>';el.appendChild(d);});}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmtSize(n){if(n>1e9)return(n/1e9).toFixed(2)+' GB';if(n>1e6)return(n/1e6).toFixed(1)+' MB';if(n>1e3)return(n/1e3).toFixed(1)+' KB';return n+' B';}
+function setPill(id,on,text){const el=$(id);el.classList.toggle('on',!!on);if(text)el.textContent=text;}
+function addMsg(role,text,streaming){const el=document.createElement('div');el.className='msg '+role+(streaming?' streaming':'');el.innerHTML='<span class="who">'+(role==='user'?'Você':'Luna')+'</span><span class="body"></span>';el.querySelector('.body').textContent=text;$('#messages').appendChild(el);$('#messages').scrollTop=$('#messages').scrollHeight;return el;}
+function buildMessages(userText){
+  const sys=state.instructions+'\nNome público: '+state.settings.name+'. Nome privado: '+state.settings.privateName+'.\nModo atual: '+state.mode+'.'+(state.memory.length?'\nMemórias: '+state.memory.join('; '):'');
+  const msgs=[{role:'system',content:sys}];
+  state.messages.slice(-12).forEach(m=>msgs.push({role:m.role==='user'?'user':'assistant',content:m.content}));
+  msgs.push({role:'user',content:userText});
+  return msgs;
+}
+function sendChat(text,opts){
+  text=(text||'').trim();if(!text||state.generating)return;
+  opts=opts||{};
+  navigate('chat');
+  state.messages.push({role:'user',content:text});
+  addMsg('user',text,false);
+  $('#chatInput').value='';
+  state.generating=true;$('#stopBtn').hidden=false;$('#sendBtn').hidden=true;
+  state.currentText='';state.currentEl=addMsg('luna','',true);
+  state.mcPending=!!opts.mc;
+  const msgs=buildMessages(text);
+  if(state.modelLoaded&&hasNative){call('chat',JSON.stringify(msgs),JSON.stringify({maxTokens:state.settings.maxTokens,temp:0.8,topP:0.9}));}
+  else{fallbackStream(text);}
+}
+function fallbackStream(text){
+  const reply=fallbackAnswer(text);
+  let i=0;const timer=setInterval(()=>{if(!state.generating){clearInterval(timer);finishReply();return;}i+=2;const chunk=reply.slice(0,i);state.currentText=chunk;if(state.currentEl)state.currentEl.querySelector('.body').textContent=chunk;if(i>=reply.length){clearInterval(timer);finishReply();}},18);
+}
+function fallbackAnswer(t){
+  t=t.toLowerCase();const n=state.settings.name;
+  if(t.includes('encerrar vídeo'))return 'É isso, '+n+'! Obrigada por jogar comigo. Deixa o like, se inscreve no canal Tapazaki e até a próxima! 💜';
+  if(t.includes('minecraft'))return 'Bora, '+n+'! Posso acompanhar eventos e mandar comandos pela ponte. Inicia a ponte na aba Minecraft e usa /connect no jogo. ⛏';
+  if(t.includes('oi')||t.includes('olá'))return 'Oi, '+n+'! 💜 Tô aqui. Quer conversar, jogar ou configurar minha IA local?';
+  if(t.includes('curiosidade'))return 'Sabia que o Minecraft já foi chamado de Cave Game? Parece outro jogo, né? 😄';
+  return 'Entendi, '+n+'. Ainda estou sem o modelo GGUF carregado, então respondo em modo básico. Importa e carrega o LunaTz.gguf pra eu pensar de verdade. 💜';
+}
+function finishReply(){
+  state.generating=false;$('#stopBtn').hidden=true;$('#sendBtn').hidden=false;
+  if(state.currentEl)state.currentEl.classList.remove('streaming');
+  const reply=state.currentText.trim();
+  if(reply){state.messages.push({role:'assistant',content:reply});state.lastReply=reply;state.history.push({role:'user',content:state.messages.filter(m=>m.role==='user').slice(-1)[0]?.content||'',ts:Date.now()});state.history.push({role:'assistant',content:reply,ts:Date.now()});if(state.history.length>400)state.history=state.history.slice(-400);saveHistory();
+    if(state.settings.autoSpeak&&state.mode!=='Silenciosa')call('speak',reply);
+    if(state.mcPending&&state.bridgeRunning){call('sendCommand','say '+reply.replace(/\n/g,' ').slice(0,180));state.mcPending=false;}
   }
-
-  function safeCall(fn, fallback) {
-    try { return fn(); } catch (e) { log('native: ' + e.message, 'warn'); return fallback; }
+}
+function stopGeneration(){state.generating=false;call('stopChat');finishReply();}
+function speakToggle(){if(state.speaking)call('stopSpeaking');}
+function renderSettings(){
+  $('#setName').value=state.settings.name;$('#setPrivate').value=state.settings.privateName;$('#setRate').value=state.settings.rate;$('#setPitch').value=state.settings.pitch;$('#setOrientation').value=state.settings.orientation;$('#setCtx').value=state.settings.ctx;$('#setThreads').value=state.settings.threads;$('#setMaxTokens').value=state.settings.maxTokens;$('#setAutoSpeak').checked=state.settings.autoSpeak;$('#setKeepAwake').checked=state.settings.keepAwake;
+}
+function applySettings(){call('setVoice',state.settings.rate,state.settings.pitch);call('setOrientation',state.settings.orientation);call('keepScreenOn',state.settings.keepAwake);}
+function mcLog(msg){const el=$('#mcLog');el.textContent+=msg+'\n';el.scrollTop=el.scrollHeight;}
+function startQuiz(){const qs=[['Qual mob explode?','Creeper'],['Qual bloco é usado para fazer ferramentas de diamante?','Diamante'],['Qual dimensão tem o Ender Dragon?','End'],['Qual material faz o portal do Nether?','Obsidiana']];const q=qs[Math.floor(Math.random()*qs.length)];const box=$('#gameBox');box.hidden=false;box.innerHTML='<b>Quiz:</b> '+esc(q[0])+'<br>';['Creeper','Zumbi','Diamante','End','Obsidiana','Esqueleto'].forEach(a=>{const b=document.createElement('button');b.className='btn ghost';b.textContent=a;b.onclick=()=>{box.innerHTML+='<br><b>'+(a===q[1]?'Acertou! 💜':'Era '+q[1]+' 😅')+'</b>';};box.appendChild(b);});}
+function startWord(){const words=['creeper','redstone','diamante','nether','encantamento'];const w=words[Math.floor(Math.random()*words.length)];const box=$('#gameBox');box.hidden=false;box.innerHTML='<b>Palavra secreta:</b> '+w.length+' letras. Dica: começa com "'+w[0]+'".<br>';const inp=document.createElement('input');inp.placeholder='Seu palpite';const b=document.createElement('button');b.className='btn';b.textContent='Chutar';b.onclick=()=>{box.innerHTML+='<br>'+(inp.value.toLowerCase()===w?'Acertou! 💜':'Ainda não… tenta de novo.');};box.appendChild(inp);box.appendChild(b);}
+function startReaction(){const box=$('#gameBox');box.hidden=false;box.innerHTML='Espere o verde…';box.style.background='rgba(255,80,80,.2)';const t=Date.now()+1500+Math.random()*2500;const iv=setInterval(()=>{if(Date.now()>=t){clearInterval(iv);box.style.background='rgba(0,255,140,.2)';box.innerHTML='<b>AGORA!</b><br>';const start=Date.now();const b=document.createElement('button');b.className='btn';b.textContent='Clique!';b.onclick=()=>{box.innerHTML+='<br>Seu tempo: '+(Date.now()-start)+' ms';};box.appendChild(b);}},50);}
+function bind(){
+  $('#menuBtn').onclick=openDrawer;$('#drawerBackdrop').onclick=closeDrawer;$$('.nav-item').forEach(n=>n.onclick=()=>navigate(n.dataset.page));
+  $$('[data-go]').forEach(b=>b.onclick=()=>navigate(b.dataset.go));
+  $('#settingsBtn').onclick=()=>navigate('settings');$('#fullBtn').onclick=()=>{if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen();};
+  $('#camBtn').onclick=()=>{state.mode='Gravação';$('#modeSelect').value='Gravação';log('info','Modo gravação ativado');};
+  $$('.chip[data-quick]').forEach(b=>b.onclick=()=>sendChat(b.dataset.quick));
+  $('#sendBtn').onclick=()=>sendChat($('#chatInput').value);$('#stopBtn').onclick=stopGeneration;
+  $('#chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat(e.target.value);}});
+  $('#modeSelect').onchange=e=>{state.mode=e.target.value;$('#chatMode').textContent='Modo '+state.mode.toLowerCase();};
+  $('#clearChat').onclick=()=>{state.messages=[];$('#messages').innerHTML='';};
+  $('#micBtn').onclick=()=>{if(state.listening)call('stopListening');else call('startListening');};
+  $('#importBtn').onclick=()=>call('pickLunaFolder');
+  $('#loadBtn').onclick=()=>{call('loadModel',state.settings.ctx,state.settings.threads,128);};
+  $('#unloadBtn').onclick=()=>call('unloadModel');
+  $('#sampleBtn').onclick=()=>call('playReferenceSample');
+  $('#memoryAdd').onclick=()=>{const v=$('#memoryInput').value.trim();if(v){state.memory.push(v);$('#memoryInput').value='';saveMemory();}};
+  $('#clearHistory').onclick=()=>{state.history=[];saveHistory();renderHistory();call('clearHistory');};
+  $('#saveInstructions').onclick=()=>{state.instructions=$('#instructions').value;saveInstructions();log('info','Instruções salvas');};
+  $('#resetInstructions').onclick=()=>{state.instructions=DEFAULT_INSTRUCTIONS;$('#instructions').value=DEFAULT_INSTRUCTIONS;saveInstructions();};
+  $('#saveSettings').onclick=()=>{state.settings={...state.settings,name:$('#setName').value||'Tapazaki',privateName:$('#setPrivate').value||'Marcos',rate:+$('#setRate').value,pitch:+$('#setPitch').value,orientation:$('#setOrientation').value,ctx:+$('#setCtx').value,threads:+$('#setThreads').value,maxTokens:+$('#setMaxTokens').value,autoSpeak:$('#setAutoSpeak').checked,keepAwake:$('#setKeepAwake').checked};saveSettings();applySettings();log('info','Ajustes salvos');};
+  $('#pingBtn').onclick=()=>{$('#pingResult').textContent='Pingando…';call('pingBedrock',$('#mcHost').value,+$('#mcPort').value||19132);};
+  $('#bridgeBtn').onclick=()=>{if(state.bridgeRunning)call('stopBridge');else call('startBridge',+$('#bridgePort').value||8765);};
+  $('#cmdBtn').onclick=()=>{const c=$('#cmdInput').value.trim();if(c){call('sendCommand',c);mcLog('> '+c);$('#cmdInput').value='';}};
+  $('#launchMc').onclick=()=>call('launchMinecraft');
+  $('#quizBtn').onclick=startQuiz;$('#wordBtn').onclick=startWord;$('#reactBtn').onclick=startReaction;
+}
+window.LunaNativeEvents={dispatch(event,data){
+  switch(event){
+    case 'onTtsReady':setPill('#pillVoice',data.ready,'voz');break;
+    case 'onSpeaking':state.speaking=data.speaking;$('#lunaImg').style.filter=data.speaking?'drop-shadow(0 0 28px rgba(255,79,216,.6))':'';break;
+    case 'onListening':state.listening=data.listening;$('#micBtn').classList.toggle('listening',data.listening);break;
+    case 'onSpeechResult':if(data.text)sendChat(data.text);break;
+    case 'onSpeechPartial':$('#chatInput').value=data.text;break;
+    case 'onSpeechError':log('warn',data.error);break;
+    case 'onAudioPermission':log('info','Microfone: '+(data.granted?'ok':'negado'));break;
+    case 'onModelLoading':log('info','Carregando modelo…');$('#stageStatus').textContent='Carregando IA…';break;
+    case 'onModelLoaded':state.modelLoaded=true;setPill('#pillModel',true,'IA local');$('#stageStatus').textContent='Luna online · IA local';log('info','Modelo carregado');break;
+    case 'onModelError':log('error',data.error);$('#stageStatus').textContent='IA não carregada';break;
+    case 'onModelUnloaded':state.modelLoaded=false;setPill('#pillModel',false,'IA local');break;
+    case 'onToken':state.currentText+=data.token;if(state.currentEl)state.currentEl.querySelector('.body').textContent=state.currentText;$('#messages').scrollTop=$('#messages').scrollHeight;break;
+    case 'onChatDone':log('info','Resposta: '+data.tokens+' tokens em '+data.millis+' ms');finishReply();break;
+    case 'onChatError':log('error',data.error);finishReply();break;
+    case 'onFolderPicked':if(data.ok){localStorage.setItem('lunatz.files',JSON.stringify(data.files));renderFiles();log('info','Pasta importada: '+data.files.length+' arquivos');}else log('error',data.error);break;
+    case 'onImportProgress':$('#importProgress').hidden=false;$('#importProgress').firstElementChild.style.width=data.percent+'%';break;
+    case 'onBedrockPing':$('#pingResult').textContent=data.ok?('OK · '+data.latencyMs+' ms\n'+data.motd):('Falha: '+data.error);break;
+    case 'onBridgeStatus':state.bridgeRunning=data.running;setPill('#pillBridge',data.running,'Minecraft');$('#bridgeBtn').textContent=data.running?'Parar':'Iniciar';$('#bridgeResult').textContent=data.running?('Ativa na porta '+(data.port||8765)+'\nIPs: '+(data.ips||[]).join(', ')):(data.error||'Parada');break;
+    case 'onMinecraftEvent':{
+      const e=data.event;let line='['+e+']';
+      if(data.properties){const p=data.properties;const msg=p.message||p.playerName||p.blockName||'';line+=' '+(p.sender?p.sender+': ':'')+msg;}
+      else if(data.raw)line+=' '+data.raw.slice(0,160);
+      mcLog(line);
+      if(e==='PlayerMessage'&&state.settings.mcAuto&&data.properties&&data.properties.message&&/luna/i.test(data.properties.message)){sendChat(data.properties.message,{mc:true});}
+      break;}
+    case 'onCommandResult':if(!data.ok)mcLog('Erro: '+data.error);break;
+    case 'onSample':log('info',data.ok?(data.playing?'Tocando amostra':'Amostra concluída'):data.error);break;
+    case 'onLog':log(data.level||'info',data.message);break;
   }
-  function parseJson(text, fallback) { try { return JSON.parse(text); } catch (_) { return fallback; } }
-
-  function loadSettings() {
-    const raw = isNative ? safeCall(() => native.getSettings(), '{}') : localStorage.getItem('lunatz.settings') || '{}';
-    Object.assign(state.settings, parseJson(raw, {}));
-    if (!state.settings.prompt) state.settings.prompt = defaultPrompt;
-    $('#prompt').value = state.settings.prompt;
-    $('#set-voice').checked = !!state.settings.voice;
-    $('#set-screen').checked = !!state.settings.screen;
-    $('#set-motion').checked = !!state.settings.motion;
-    $('#set-orientation').value = state.settings.orientation || 'auto';
-    $('#set-rate').value = state.settings.rate || 1;
-    $('#set-pitch').value = state.settings.pitch || 1.08;
-    applySettings();
-  }
-  function saveSettings() {
-    state.settings.voice = $('#set-voice').checked;
-    state.settings.screen = $('#set-screen').checked;
-    state.settings.motion = $('#set-motion').checked;
-    state.settings.orientation = $('#set-orientation').value;
-    state.settings.rate = parseFloat($('#set-rate').value);
-    state.settings.pitch = parseFloat($('#set-pitch').value);
-    state.settings.prompt = $('#prompt').value.trim() || defaultPrompt;
-    const raw = JSON.stringify(state.settings);
-    if (isNative) safeCall(() => native.saveSettings(raw)); else localStorage.setItem('lunatz.settings', raw);
-    applySettings();
-    log('Ajustes salvos.');
-  }
-  function applySettings() {
-    document.body.classList.toggle('reduce-motion', !state.settings.motion);
-    if (isNative) {
-      safeCall(() => native.setOrientation(state.settings.orientation));
-      safeCall(() => native.keepScreenOn(state.settings.screen));
-      safeCall(() => native.setVoice(state.settings.rate, state.settings.pitch));
-    }
-  }
-
-  function loadHistory() {
-    const raw = isNative ? safeCall(() => native.getHistory(), '[]') : localStorage.getItem('lunatz.history') || '[]';
-    state.history = parseJson(raw, []);
-    renderHistory();
-    state.history.slice(-30).forEach(m => addMessage(m.role, m.text, false));
-  }
-  function saveHistory() {
-    const raw = JSON.stringify(state.history.slice(-200));
-    if (isNative) safeCall(() => native.saveHistory(raw)); else localStorage.setItem('lunatz.history', raw);
-    renderHistory();
-  }
-  function renderHistory() {
-    const box = $('#history-list');
-    box.innerHTML = '';
-    if (!state.history.length) { box.innerHTML = '<div class="card note">Sem histórico ainda.</div>'; return; }
-    state.history.slice().reverse().forEach(m => {
-      const div = document.createElement('div');
-      div.className = 'card file-item';
-      div.innerHTML = '<div><b>' + (m.role === 'user' ? 'Você' : 'Luna') + '</b><small>' + escapeHtml(m.text) + '</small></div><small>' + new Date(m.t).toLocaleString() + '</small>';
-      box.appendChild(div);
-    });
-  }
-  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
-
-  function loadFiles() {
-    const raw = isNative ? safeCall(() => native.getFilesManifest(), '[]') : localStorage.getItem('lunatz.files') || '[]';
-    state.files = parseJson(raw, []);
-    renderFiles();
-    const brainRaw = isNative ? safeCall(() => native.readBrain(), '{}') : localStorage.getItem('lunatz.brain') || '{}';
-    state.brain = parseJson(brainRaw, null);
-  }
-  function renderFiles() {
-    const expected = ['LunaTz.gguf', 'Luna_Voice.pth', 'LunaTz_Brain.json', 'luna_skin.png', 'voz_luna.mp3'];
-    const box = $('#files-list');
-    box.innerHTML = '';
-    expected.forEach(name => {
-      const f = state.files.find(x => x.name === name);
-      const div = document.createElement('div');
-      div.className = 'card file-item';
-      const status = f ? f.status || 'importado' : 'não importado';
-      const cls = f ? 'ok' : 'warn';
-      div.innerHTML = '<div><b>' + escapeHtml(name) + '</b><small>' + (f ? humanSize(f.size) + ' · ' : '') + '<span class="' + cls + '">' + escapeHtml(status) + '</span></small></div>';
-      box.appendChild(div);
-    });
-    const extras = state.files.filter(f => !expected.includes(f.name));
-    extras.forEach(f => {
-      const div = document.createElement('div');
-      div.className = 'card file-item';
-      div.innerHTML = '<div><b>' + escapeHtml(f.name) + '</b><small>' + humanSize(f.size) + ' · ' + escapeHtml(f.status || f.kind || '') + '</small></div>';
-      box.appendChild(div);
-    });
-  }
-  function humanSize(n) { if (!n && n !== 0) return ''; if (n > 1048576) return (n / 1048576).toFixed(1) + ' MB'; if (n > 1024) return (n / 1024).toFixed(1) + ' KB'; return n + ' B'; }
-
-  function addMessage(role, text, save) {
-    const div = document.createElement('div');
-    div.className = 'msg ' + role;
-    div.innerHTML = escapeHtml(text) + '<small>' + (role === 'user' ? 'você' : 'Luna') + ' · ' + new Date().toLocaleTimeString() + '</small>';
-    $('#messages').appendChild(div);
-    $('#messages').scrollTop = $('#messages').scrollHeight;
-    if (save !== false) {
-      state.history.push({ role, text, t: Date.now() });
-      saveHistory();
-    }
-  }
-  function lunaSay(text, speak) {
-    addMessage('luna', text);
-    $('#home-speech').textContent = text;
-    if (state.settings.voice && speak !== false) {
-      if (isNative) safeCall(() => native.speak(text));
-      else if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(text); u.lang = 'pt-BR'; speechSynthesis.speak(u); }
-    }
-  }
-  function answer(input) {
-    const t = input.toLowerCase();
-    const filesOk = state.files.some(f => f.name === 'LunaTz.gguf' && /válido/i.test(f.status || ''));
-    if (/encerrar vídeo|despedida|tchau/.test(t)) return pick([
-      'Bora fechar por hoje, gente! Se curtiu, deixa o like e acompanha o Tapazaki. Eu volto no próximo… se ele não me prender numa caverna de novo.',
-      'Valeu por jogar com a gente! Comenta o próximo addon. Eu vou cobrar, hein. Tchau!'
-    ]);
-    if (/status/.test(t)) return 'Tô pronta por aqui. ' + (filesOk ? 'Detectei um GGUF válido. ' : 'Ainda não validei o GGUF. ') + 'Este build usa voz do sistema e respostas locais de teste; o módulo Bedrock autônomo ainda não está conectado.';
-    if (/addon/.test(t)) return 'Addons de textura e animação geralmente aparecem no jogador. Addons com itens, chefes e regras novas precisam de conhecimento e adaptadores. Não vou fingir que sei tudo: a gente testa e aprende.';
-    if (/gravação|gravar/.test(t)) return 'Modo gravação armado. Vou falar menos, reagir nos momentos bons e deixar o encerramento comigo quando você pedir.';
-    if (/minecraft|bedrock|mundo/.test(t)) return 'Abre seu mundo, deixa o multiplayer/LAN ativo e testa a porta na aba Minecraft. Se 19132 não responder, tenta 19332. Por enquanto eu faço o diagnóstico; entrar e andar vem com o cliente Bedrock completo.';
-    if (/oi|olá|boa noite|bom dia/.test(t)) return pick(['Oi, Tapazaki! Bora fazer caos organizado?', 'Boa noite! Tô aqui. Qual é a missão de hoje?', 'Caraca, você chegou. Bora jogar?']);
-    if (/nome|quem é você/.test(t)) return 'Sou Luna, sua companheira virtual de gameplay. Tapazaki & Assistente estão construindo meu motor com carinho.';
-    return pick([
-      'Entendi. Vamos por partes: primeiro garantir conexão e arquivos, depois autonomia. Sem pressa e sem inventar moda.',
-      'Boa. Eu gosto desse plano. Só não vou prometer magia antes de testar no seu Moto g06.',
-      'Tamo junto. Se der ruim, a gente lê o console, ajusta e tenta de novo.'
-    ]);
-  }
-  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-  function sendChat(text) {
-    const clean = String(text || '').trim();
-    if (!clean) return;
-    addMessage('user', clean);
-    setTimeout(() => lunaSay(answer(clean)), 250);
-  }
-
-  function go(page) {
-    if (!pages[page]) return;
-    state.page = page;
-    $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
-    $$('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === page));
-    $('#page-title').textContent = pages[page][0];
-    $('#page-sub').textContent = pages[page][1];
-    closeDrawer();
-    if (page === 'files') loadFiles();
-    if (page === 'history') renderHistory();
-  }
-  function openDrawer() { $('#drawer').classList.add('open'); $('#scrim').classList.add('show'); }
-  function closeDrawer() { $('#drawer').classList.remove('open'); $('#scrim').classList.remove('show'); }
-
-  function buildNav() {
-    const nav = $('#nav');
-    Object.keys(pages).forEach(key => {
-      const b = document.createElement('button');
-      b.className = 'nav-item';
-      b.dataset.page = key;
-      b.innerHTML = '<span>' + navIcons[key] + '</span><span>' + pages[key][0] + '</span>';
-      b.onclick = () => go(key);
-      nav.appendChild(b);
-    });
-  }
-
-  window.LunaNativeEvents = {
-    dispatch(event, data) {
-      if (event === 'onFolderPicked') {
-        if (data.ok) { state.files = data.files || []; localStorage.setItem('lunatz.files', JSON.stringify(state.files)); renderFiles(); log('Pasta importada: ' + state.files.length + ' arquivo(s).'); }
-        else log('Importação cancelada/falhou: ' + (data.error || ''), 'warn');
-      } else if (event === 'onSpeechResult') {
-        if (data.text) sendChat(data.text);
-      } else if (event === 'onSpeechPartial') {
-        $('#chat-input').value = data.text || '';
-      } else if (event === 'onListening') {
-        state.listening = !!data.listening;
-        $('#btn-mic').classList.toggle('listening', state.listening);
-      } else if (event === 'onSpeaking') {
-        state.speaking = !!data.speaking;
-        document.body.classList.toggle('speaking', state.speaking);
-      } else if (event === 'onSpeechError') {
-        log('Voz: ' + data.error, 'warn');
-      } else if (event === 'onBedrockPing') {
-        const box = $('#mc-result');
-        if (data.ok) { box.textContent = 'PONG OK · ' + data.latencyMs + ' ms\n' + data.motd; box.className = 'result ok'; log('Bedrock respondeu: ' + data.motd); }
-        else { box.textContent = 'Sem pong: ' + data.error + '\nTente outra porta ou abra o mundo em LAN.'; box.className = 'result bad'; log('Bedrock sem resposta: ' + data.error, 'warn'); }
-      } else if (event === 'onSample') {
-        log(data.ok ? 'Amostra: ' + (data.playing ? 'tocando' : 'fim') : 'Amostra falhou: ' + data.error, data.ok ? 'info' : 'warn');
-      } else if (event === 'onTtsReady') {
-        log('TTS ' + (data.ready ? 'pronto' : 'indisponível'), data.ready ? 'info' : 'warn');
-      } else if (event === 'onLog') {
-        log(data.message, data.level);
-      }
-    }
-  };
-
-  function bind() {
-    $('#btn-menu').onclick = openDrawer;
-    $('#scrim').onclick = closeDrawer;
-    $('#btn-console').onclick = () => $('#console').classList.toggle('collapsed');
-    $('#console-toggle').onclick = () => $('#console').classList.toggle('collapsed');
-    $$('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
-    $('#chat-form').onsubmit = e => { e.preventDefault(); const i = $('#chat-input'); sendChat(i.value); i.value = ''; };
-    $('#btn-mic').onclick = () => {
-      if (isNative) { if (state.listening) native.stopListening(); else native.startListening(); }
-      else log('Microfone nativo só está disponível no APK.', 'warn');
-    };
-    $$('[data-say]').forEach(b => b.onclick = () => sendChat(b.dataset.say));
-    $('#btn-pick-folder').onclick = () => { if (isNative) native.pickLunaFolder(); else log('Seleção de pasta só está disponível no APK.', 'warn'); };
-    $('#btn-refresh-files').onclick = loadFiles;
-    $('#btn-play-sample').onclick = () => { if (isNative) native.playReferenceSample(); else log('Amostra só está disponível no APK.', 'warn'); };
-    $('#btn-ping').onclick = () => {
-      const host = $('#mc-host').value.trim() || '127.0.0.1';
-      const port = parseInt($('#mc-port').value, 10) || 19132;
-      $('#mc-result').textContent = 'Enviando ping RakNet para ' + host + ':' + port + '...';
-      if (isNative) native.pingBedrock(host, port);
-      else setTimeout(() => window.LunaNativeEvents.dispatch('onBedrockPing', { ok: false, error: 'preview sem UDP nativo' }), 400);
-    };
-    $('#btn-launch-mc').onclick = () => { if (isNative) native.launchMinecraft(); else log('Abrir Minecraft só está disponível no APK.', 'warn'); };
-    $('#btn-save-prompt').onclick = saveSettings;
-    $$('[data-preset]').forEach(b => b.onclick = () => { $('#prompt').value = presets[b.dataset.preset] || defaultPrompt; });
-    $('#btn-save-settings').onclick = saveSettings;
-    $('#btn-clear-history').onclick = () => { state.history = []; saveHistory(); $('#messages').innerHTML = ''; if (isNative) safeCall(() => native.clearHistory()); else localStorage.removeItem('lunatz.history'); log('Histórico limpo.'); };
-    window.LunaUI = { back() { if ($('#drawer').classList.contains('open')) { closeDrawer(); return true; } if (state.page !== 'home') { go('home'); return true; } return false; } };
-  }
-
-  buildNav();
-  bind();
-  loadSettings();
-  loadHistory();
-  loadFiles();
-  go('home');
-  log(isNative ? 'APK nativo iniciado.' : 'Preview web iniciado (sem ponte nativa).');
-  if (!state.history.length) lunaSay('Boa noite, Tapazaki. Eu sou a Luna. Este é o primeiro build de teste: vamos validar arquivos, voz e conexão antes de eu entrar no mundo.', false);
+}};
+window.LunaUI={back(){if($('#drawer').classList.contains('open')){closeDrawer();return true;}if(state.page!=='home'){navigate('home');return true;}return false;}};
+function init(){
+  loadAll();renderSettings();applySettings();$('#instructions').value=state.instructions;bind();renderFiles();renderAbout();
+  addMsg('luna','Oi, '+state.settings.name+'! 💜 Sou a Luna. Carregue meu GGUF na aba Arquivos para conversa completa, ou conecte a ponte Minecraft.',false);
+  if(hasNative){const ms=parse(call('getModelStatus')||'{}',{});if(ms.loaded){state.modelLoaded=true;setPill('#pillModel',true,'IA local');}const bs=parse(call('getBridgeStatus')||'{}',{});if(bs.running){state.bridgeRunning=true;setPill('#pillBridge',true,'Minecraft');}}
+  log('info','LunaTz Companion iniciado');
+}
+init();
 })();

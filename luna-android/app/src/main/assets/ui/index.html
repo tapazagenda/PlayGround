@@ -2,179 +2,181 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05060d">
 <title>LunaTz Companion</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="stars" aria-hidden="true"></div>
-<div id="app">
-  <aside id="drawer" class="drawer">
-    <div class="drawer-head">
-      <div class="luna-orb small"><span></span></div>
-      <div><b>LunaTz</b><small>Companion · v1.0.0</small></div>
+<div class="bg-city"></div>
+<div class="bg-glow"></div>
+<div class="scanlines"></div>
+
+<header class="topbar">
+  <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu">≡</button>
+  <div class="brand"><span class="brand-name">LunaTz</span><span class="brand-sub">Companion</span></div>
+  <div class="top-status">
+    <span class="pill" id="pillModel">IA local</span>
+    <span class="pill" id="pillBridge">Minecraft</span>
+    <span class="pill" id="pillVoice">voz</span>
+  </div>
+  <button class="icon-btn" id="camBtn" title="Modo gravação">◉</button>
+  <button class="icon-btn" id="fullBtn" title="Tela cheia">⛶</button>
+  <button class="icon-btn" id="settingsBtn" title="Ajustes">⚙</button>
+</header>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<nav class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="avatar-mini"></div>
+    <div><strong>LunaTz</strong><small>Engine v1.1 · Tapazaki</small></div>
+  </div>
+  <button data-page="home" class="nav-item active">⌂ Início</button>
+  <button data-page="chat" class="nav-item">✦ Conversa</button>
+  <button data-page="games" class="nav-item">▣ Jogos</button>
+  <button data-page="minecraft" class="nav-item">⛏ Minecraft</button>
+  <button data-page="instructions" class="nav-item">✎ Instruções</button>
+  <button data-page="files" class="nav-item">▤ Arquivos</button>
+  <button data-page="memory" class="nav-item">❖ Memória</button>
+  <button data-page="history" class="nav-item">◷ Histórico</button>
+  <button data-page="settings" class="nav-item">⚙ Ajustes</button>
+  <button data-page="about" class="nav-item">♥ Sobre</button>
+  <div class="drawer-foot">Criado por <b>Tapazaki</b> + Assistente ❤️</div>
+</nav>
+
+<main class="layout">
+  <section class="stage">
+    <div class="stage-frame">
+      <img src="img/luna-hologram.jpg" alt="Luna holográfica" class="luna-img" id="lunaImg">
+      <div class="holo-ring"></div>
+      <div class="stage-caption">
+        <span class="live-dot"></span>
+        <span id="stageStatus">Luna online</span>
+      </div>
     </div>
-    <nav id="nav"></nav>
-    <div class="drawer-foot">Criado por <b>Tapazaki</b> &amp; Assistente ❤️</div>
-  </aside>
-  <div id="scrim" class="scrim"></div>
+    <div class="quick-actions">
+      <button class="chip" data-quick="Oi Luna, tudo bem?">Oi Luna</button>
+      <button class="chip" data-quick="Vamos jogar Minecraft?">Minecraft</button>
+      <button class="chip" data-quick="Me conta uma curiosidade gamer">Curiosidade</button>
+      <button class="chip" data-quick="Luna, encerrar vídeo">Encerrar vídeo</button>
+    </div>
+  </section>
 
-  <main class="main">
-    <header class="topbar">
-      <button id="btn-menu" class="icon-btn" aria-label="Abrir menu">☰</button>
-      <div class="title"><b id="page-title">Início</b><small id="page-sub">LunaTz Engine v1.0</small></div>
-      <div class="status-chip" id="status-chip"><i></i><span>pronta</span></div>
-      <button id="btn-console" class="icon-btn" aria-label="Console">⌘</button>
-    </header>
+  <section class="panel page active" id="page-home">
+    <div class="panel-head"><h1>Olá, Tapazaki</h1><p>Sua companheira local está pronta.</p></div>
+    <div class="cards">
+      <div class="card"><h3>Conversa</h3><p>IA local GGUF, voz e memória.</p><button class="btn" data-go="chat">Abrir chat</button></div>
+      <div class="card"><h3>Minecraft</h3><p>Ponte de eventos e comandos.</p><button class="btn" data-go="minecraft">Conectar</button></div>
+      <div class="card"><h3>Arquivos</h3><p>Importe modelo, cérebro e skin.</p><button class="btn" data-go="files">Importar</button></div>
+    </div>
+  </section>
 
-    <section id="page-home" class="page active">
-      <div class="hero">
-        <div class="avatar-wrap">
-          <div class="halo"></div>
-          <svg class="luna-svg" viewBox="0 0 220 320" aria-label="Luna">
-            <defs>
-              <linearGradient id="hair" x1="0" x2="1"><stop stop-color="#6b4a36"/><stop offset="1" stop-color="#3d2a20"/></linearGradient>
-              <linearGradient id="skirt" x1="0" x2="1"><stop stop-color="#ff9ac4"/><stop offset="1" stop-color="#d86fa0"/></linearGradient>
-              <linearGradient id="top" x1="0" x2="1"><stop stop-color="#ff6b6b"/><stop offset="1" stop-color="#c53d3d"/></linearGradient>
-            </defs>
-            <g class="breathe">
-              <path fill="url(#hair)" d="M62 78c-8-42 22-66 48-66s56 24 48 66l-8 70H70z"/>
-              <circle cx="110" cy="72" r="34" fill="#ffd9c4"/>
-              <path fill="url(#hair)" d="M76 66c4-30 24-40 34-40s30 10 34 40c-12-12-22-16-34-16s-22 4-34 16z"/>
-              <g class="eyes"><ellipse cx="96" cy="74" rx="4" ry="6" fill="#2b2b2b"/><ellipse cx="124" cy="74" rx="4" ry="6" fill="#2b2b2b"/></g>
-              <path class="mouth" d="M104 90q6 5 12 0" stroke="#c56a6a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-              <path fill="url(#top)" d="M78 116h64l10 52H68z"/>
-              <path fill="#fff" opacity=".85" d="M84 116h12v52H84zm20 0h12v52h-12zm20 0h12v52h-12z"/>
-              <path fill="url(#skirt)" d="M68 168h84l14 54H54z"/>
-              <path fill="#ffd9c4" d="M74 122l-14 46 10 4 16-40zm72 0l14 46-10 4-16-40z"/>
-              <path fill="#ffd9c4" d="M92 222h12v58H92zm24 0h12v58h-12z"/>
-              <path fill="#222" d="M88 268h20v26H88zm24 0h20v26h-20z"/>
-            </g>
-          </svg>
-          <div class="speech" id="home-speech">Boa noite, Tapazaki. Bora jogar?</div>
-        </div>
-        <div class="hero-cards">
-          <button class="card action" data-go="minecraft"><b>🎮 Minecraft</b><small>Testar conexão LAN e abrir o jogo</small></button>
-          <button class="card action" data-go="files"><b>📁 DADOS DE LUNA</b><small>Importar GGUF, voz, cérebro e skin</small></button>
-          <button class="card action" data-go="chat"><b>💬 Conversar</b><small>Voz, texto e modo gravação</small></button>
-          <button class="card action" data-go="instructions"><b>🧠 Instruções</b><small>Personalidade e regras da Luna</small></button>
-        </div>
+  <section class="panel page" id="page-chat">
+    <div class="chat-head">
+      <div><h2>Conversa</h2><small id="chatMode">Modo conversa</small></div>
+      <div class="chat-tools">
+        <select id="modeSelect"><option>Conversa</option><option>Jogo</option><option>Gravação</option><option>Silenciosa</option></select>
+        <button class="icon-btn" id="clearChat" title="Limpar">⌫</button>
       </div>
-    </section>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="composer">
+      <button class="icon-btn mic" id="micBtn" title="Falar">🎙</button>
+      <textarea id="chatInput" rows="1" placeholder="Fale com a Luna…"></textarea>
+      <button class="icon-btn send" id="sendBtn" title="Enviar">➤</button>
+      <button class="icon-btn stop" id="stopBtn" title="Parar" hidden>■</button>
+    </div>
+  </section>
 
-    <section id="page-chat" class="page">
-      <div class="chat-shell">
-        <div id="messages" class="messages"></div>
-        <div class="quick-chips">
-          <button data-say="Luna, status">Status</button>
-          <button data-say="Luna, encerrar vídeo">Encerrar vídeo</button>
-          <button data-say="Luna, falar sobre addons">Addons</button>
-          <button data-say="Luna, modo gravação">Gravação</button>
-        </div>
-        <form id="chat-form" class="composer">
-          <button type="button" id="btn-mic" class="icon-btn mic" aria-label="Microfone">🎙</button>
-          <input id="chat-input" autocomplete="off" placeholder="Fale com a Luna...">
-          <button type="submit" class="icon-btn send" aria-label="Enviar">➤</button>
-        </form>
-      </div>
-    </section>
+  <section class="panel page" id="page-games">
+    <div class="panel-head"><h2>Jogos</h2><p>Interações rápidas com a Luna.</p></div>
+    <div class="cards">
+      <div class="card"><h3>Quiz gamer</h3><p>Perguntas e respostas.</p><button class="btn" id="quizBtn">Começar</button></div>
+      <div class="card"><h3>Palavra secreta</h3><p>Dicas até acertar.</p><button class="btn" id="wordBtn">Jogar</button></div>
+      <div class="card"><h3>Reação</h3><p>Teste seus reflexos.</p><button class="btn" id="reactBtn">Iniciar</button></div>
+    </div>
+    <div class="game-box" id="gameBox" hidden></div>
+  </section>
 
-    <section id="page-games" class="page">
-      <div class="grid-cards">
-        <div class="card game-card supported"><b>Minecraft Bedrock</b><small>LAN local · ping/ponsa · abrir jogo</small><button class="btn" data-go="minecraft">Configurar</button></div>
-        <div class="card game-card"><b>Minecraft PE</b><small>Mesmo aparelho · mundo local</small><span class="tag">alvo principal</span></div>
-        <div class="card game-card disabled"><b>Outros jogos</b><small>Arquitetura de adaptadores futura</small><span class="tag">em breve</span></div>
-      </div>
-      <p class="note">O APK de teste valida a interface, arquivos, voz do sistema e o diagnóstico Bedrock. O controle autônomo completo da personagem ainda depende do cliente de protocolo Bedrock.</p>
-    </section>
-
-    <section id="page-minecraft" class="page">
-      <div class="card form-card">
-        <label>Host <input id="mc-host" value="127.0.0.1"></label>
-        <label>Porta <input id="mc-port" type="number" value="19132"></label>
-        <div class="row">
-          <button id="btn-ping" class="btn primary">Testar pong Bedrock</button>
-          <button id="btn-launch-mc" class="btn">Abrir Minecraft</button>
-        </div>
-        <div id="mc-result" class="result">Aguardando teste.</div>
+  <section class="panel page" id="page-minecraft">
+    <div class="panel-head"><h2>Minecraft</h2><p>Ponte local de eventos e comandos (beta).</p></div>
+    <div class="mc-grid">
+      <div class="card">
+        <h3>Ping Bedrock</h3>
+        <div class="row"><input id="mcHost" value="127.0.0.1"><input id="mcPort" type="number" value="19132" style="max-width:100px"></div>
+        <button class="btn" id="pingBtn">Ping</button>
+        <pre class="mini-log" id="pingResult"></pre>
       </div>
       <div class="card">
-        <b>Como usar no mesmo celular</b>
-        <ol class="note">
-          <li>Abra seu mundo no Minecraft.</li>
-          <li>Ative multiplayer/LAN se o jogo exigir.</li>
-          <li>Volte ao LunaTz e teste a porta. Se 19132 falhar, tente 19332.</li>
-        </ol>
-        <p class="note">Importante: este build faz diagnóstico de rede. Entrar como jogadora, andar, minerar e craftar exige o módulo Bedrock completo.</p>
+        <h3>Ponte WebSocket</h3>
+        <div class="row"><input id="bridgePort" type="number" value="8765" style="max-width:100px"><button class="btn" id="bridgeBtn">Iniciar</button></div>
+        <div class="hint">No Minecraft: <code>/connect IP:8765</code></div>
+        <pre class="mini-log" id="bridgeResult"></pre>
       </div>
-    </section>
-
-    <section id="page-instructions" class="page">
-      <div class="card form-card">
-        <label>Prompt de personalidade
-          <textarea id="prompt" rows="10"></textarea>
-        </label>
-        <div class="row">
-          <button id="btn-save-prompt" class="btn primary">Salvar instruções</button>
-          <button class="btn" data-preset="gamer">Gamer</button>
-          <button class="btn" data-preset="gravacao">Gravação</button>
-          <button class="btn" data-preset="doce">Doce</button>
-        </div>
-        <p class="note">As instruções moldam o comportamento local. Quando o inferidor GGUF estiver integrado, este texto será a base do sistema.</p>
+      <div class="card wide">
+        <h3>Console de comandos</h3>
+        <div class="row"><input id="cmdInput" placeholder="say Luna conectada"><button class="btn" id="cmdBtn">Enviar</button></div>
+        <pre class="mini-log tall" id="mcLog"></pre>
       </div>
-    </section>
+    </div>
+    <button class="btn ghost" id="launchMc">Abrir Minecraft</button>
+  </section>
 
-    <section id="page-files" class="page">
-      <div class="card form-card">
-        <b>/sdcard/DADOS DE LUNA</b>
-        <p class="note">Selecione a pasta uma vez. O app copia os arquivos para uma área privada e valida o que consegue.</p>
-        <div class="row">
-          <button id="btn-pick-folder" class="btn primary">Selecionar pasta</button>
-          <button id="btn-refresh-files" class="btn">Atualizar</button>
-          <button id="btn-play-sample" class="btn">Tocar amostra</button>
-        </div>
-      </div>
-      <div id="files-list" class="files-list"></div>
-    </section>
+  <section class="panel page" id="page-instructions">
+    <div class="panel-head"><h2>Instruções</h2><p>Personalidade e regras da Luna.</p></div>
+    <textarea class="editor" id="instructions"></textarea>
+    <div class="row"><button class="btn" id="saveInstructions">Salvar</button><button class="btn ghost" id="resetInstructions">Restaurar padrão</button></div>
+  </section>
 
-    <section id="page-history" class="page">
-      <div class="row"><button id="btn-clear-history" class="btn danger">Limpar histórico</button></div>
-      <div id="history-list" class="files-list"></div>
-    </section>
+  <section class="panel page" id="page-files">
+    <div class="panel-head"><h2>Arquivos da Luna</h2><p>Pasta <code>/sdcard/DADOS DE LUNA</code>.</p></div>
+    <div class="row"><button class="btn" id="importBtn">Importar pasta</button><button class="btn ghost" id="loadBtn">Carregar IA</button><button class="btn ghost" id="unloadBtn">Descarregar</button></div>
+    <div class="progress" id="importProgress" hidden><div></div></div>
+    <div class="file-list" id="fileList"></div>
+    <div class="row"><button class="btn ghost" id="sampleBtn">Ouvir voz_luna.mp3</button></div>
+  </section>
 
-    <section id="page-settings" class="page">
-      <div class="card form-card">
-        <label>Orientação
-          <select id="set-orientation"><option value="auto">Automática</option><option value="portrait">Retrato</option><option value="landscape">Paisagem</option></select>
-        </label>
-        <label><input type="checkbox" id="set-voice" checked> Responder com voz do sistema</label>
-        <label><input type="checkbox" id="set-screen" checked> Manter tela ligada</label>
-        <label><input type="checkbox" id="set-motion" checked> Animações</label>
-        <label>Velocidade da voz <input type="range" id="set-rate" min="0.6" max="1.6" step="0.05" value="1"></label>
-        <label>Tom da voz <input type="range" id="set-pitch" min="0.7" max="1.5" step="0.05" value="1.08"></label>
-        <button id="btn-save-settings" class="btn primary">Salvar ajustes</button>
-      </div>
-    </section>
+  <section class="panel page" id="page-memory">
+    <div class="panel-head"><h2>Memória</h2><p>Fatos que a Luna lembra.</p></div>
+    <div class="row"><input id="memoryInput" placeholder="Ex.: Tapazaki gosta de construir bases"><button class="btn" id="memoryAdd">Adicionar</button></div>
+    <div class="memory-list" id="memoryList"></div>
+  </section>
 
-    <section id="page-about" class="page">
-      <div class="card about">
-        <div class="luna-orb"><span></span></div>
-        <h2>LunaTz Companion</h2>
-        <p><b>Motor:</b> LunaTz Engine v1.0</p>
-        <p><b>Pacote:</b> com.tapazaki.lunatz</p>
-        <p><b>Criadores:</b> Tapazaki &amp; Assistente</p>
-        <p><b>YouTube:</b> Tapazaki</p>
-        <p class="note">Companheira virtual de gameplay. Este APK é um build de teste: interface, importação, voz do sistema, histórico e diagnóstico Bedrock. Inferência GGUF, voz neural PTH e cliente Bedrock autônomo são módulos separados em evolução.</p>
-      </div>
-    </section>
+  <section class="panel page" id="page-history">
+    <div class="panel-head"><h2>Histórico</h2><p>Conversas salvas no aparelho.</p></div>
+    <button class="btn ghost" id="clearHistory">Limpar histórico</button>
+    <div class="history-list" id="historyList"></div>
+  </section>
 
-    <footer id="console" class="console collapsed">
-      <button id="console-toggle" class="console-head">Console <span id="console-count">0</span></button>
-      <div id="console-log" class="console-log"></div>
-    </footer>
-  </main>
-</div>
+  <section class="panel page" id="page-settings">
+    <div class="panel-head"><h2>Ajustes</h2></div>
+    <div class="settings-grid">
+      <label>Nome público <input id="setName" value="Tapazaki"></label>
+      <label>Nome privado <input id="setPrivate" value="Marcos"></label>
+      <label>Velocidade da voz <input id="setRate" type="range" min="0.6" max="1.5" step="0.05" value="1"></label>
+      <label>Tom da voz <input id="setPitch" type="range" min="0.7" max="1.4" step="0.05" value="1.08"></label>
+      <label>Orientação <select id="setOrientation"><option value="auto">Automática</option><option value="portrait">Retrato</option><option value="landscape">Paisagem</option></select></label>
+      <label>Contexto (tokens) <input id="setCtx" type="number" value="2048" min="512" max="4096" step="256"></label>
+      <label>Threads <input id="setThreads" type="number" value="4" min="1" max="8"></label>
+      <label>Máx. tokens resposta <input id="setMaxTokens" type="number" value="220" min="32" max="1024"></label>
+      <label class="check"><input id="setAutoSpeak" type="checkbox" checked> Falar respostas</label>
+      <label class="check"><input id="setKeepAwake" type="checkbox" checked> Manter tela ligada</label>
+    </div>
+    <button class="btn" id="saveSettings">Salvar ajustes</button>
+  </section>
+
+  <section class="panel page" id="page-about">
+    <div class="panel-head"><h2>LunaTz Companion</h2><p>LunaTz Engine v1.1</p></div>
+    <div class="about">
+      <p>Companheira gamer local para conversa, voz e Minecraft.</p>
+      <p>Criado por <b>Tapazaki</b> + <b>Assistente</b>.</p>
+      <p>Canal: <b>Tapazaki</b></p>
+      <pre class="mini-log" id="appInfo"></pre>
+    </div>
+  </section>
+</main>
+
+<footer class="console" id="console"><div class="console-head">Console</div><div class="console-body" id="consoleBody"></div></footer>
 <script src="app.js"></script>
 </body>
 </html>
