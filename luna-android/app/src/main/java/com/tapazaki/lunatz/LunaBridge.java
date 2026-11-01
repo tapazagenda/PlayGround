@@ -132,7 +132,7 @@ public class LunaBridge {
 
     @JavascriptInterface public void importFolder(String uriString) {
         io.execute(() -> {
-            JSONObject result = json();
+            SafeJSONObject result = json();
             try {
                 Uri tree = Uri.parse(uriString);
                 JSONArray files = new JSONArray();
@@ -293,7 +293,7 @@ public class LunaBridge {
 
     @JavascriptInterface public void pingBedrock(String host, int port) {
         io.execute(() -> {
-            JSONObject result = json();
+            SafeJSONObject result = json();
             DatagramSocket socket = null;
             try {
                 result.put("host", host).put("port", port);
