@@ -72,22 +72,22 @@ public class LunaBridge {
         });
     }
 
-    JSONObject json() { return new SafeJSONObject(); }
+    SafeJSONObject json() { return new SafeJSONObject(); }
     static final class SafeJSONObject extends JSONObject {
-        @Override public JSONObject put(String name, Object value) {
-            try { return super.put(name, value); } catch (org.json.JSONException e) { throw new RuntimeException(e); }
+        @Override public SafeJSONObject put(String name, Object value) {
+            try { super.put(name, value); return this; } catch (org.json.JSONException e) { throw new RuntimeException(e); }
         }
-        @Override public JSONObject put(String name, boolean value) {
-            try { return super.put(name, value); } catch (org.json.JSONException e) { throw new RuntimeException(e); }
+        @Override public SafeJSONObject put(String name, boolean value) {
+            try { super.put(name, value); return this; } catch (org.json.JSONException e) { throw new RuntimeException(e); }
         }
-        @Override public JSONObject put(String name, double value) {
-            try { return super.put(name, value); } catch (org.json.JSONException e) { throw new RuntimeException(e); }
+        @Override public SafeJSONObject put(String name, double value) {
+            try { super.put(name, value); return this; } catch (org.json.JSONException e) { throw new RuntimeException(e); }
         }
-        @Override public JSONObject put(String name, int value) {
-            try { return super.put(name, value); } catch (org.json.JSONException e) { throw new RuntimeException(e); }
+        @Override public SafeJSONObject put(String name, int value) {
+            try { super.put(name, value); return this; } catch (org.json.JSONException e) { throw new RuntimeException(e); }
         }
-        @Override public JSONObject put(String name, long value) {
-            try { return super.put(name, value); } catch (org.json.JSONException e) { throw new RuntimeException(e); }
+        @Override public SafeJSONObject put(String name, long value) {
+            try { super.put(name, value); return this; } catch (org.json.JSONException e) { throw new RuntimeException(e); }
         }
     }
     void emit(String event, JSONObject data) {
