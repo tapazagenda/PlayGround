@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.LunaTz" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.LunaTz" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:statusBarColor">@color/luna_bg</item>
         <item name="android:navigationBarColor">@color/luna_bg</item>
         <item name="android:windowLightStatusBar">false</item>

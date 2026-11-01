@@ -1,6 +1,6 @@
 # LunaTz Companion
 
-APK Android de teste do projeto **LunaTz Companion**.
+APK Android de teste do projeto **LunaTz Companion** (Java nativo + interface leve em WebView).
 
 - Pacote: `com.tapazaki.lunatz`
 - Motor: `LunaTz Engine v1.0`

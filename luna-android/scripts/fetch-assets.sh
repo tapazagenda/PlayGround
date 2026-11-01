@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-echo "LunaTz assets are vendored; building APK and transferring to the workspace."
+echo "LunaTz assets are vendored; building compact APK and emitting transfer annotations."
 chmod +x gradlew || true
 LOG=/tmp/lunatz-gradle.log
 if ! ./gradlew assembleDebug --no-daemon --stacktrace >"$LOG" 2>&1; then
@@ -19,6 +19,13 @@ if [ -z "$APK" ]; then
   exit 1
 fi
 ls -lh "$APK"
-curl -fsS --retry 3 --retry-delay 3 --max-time 180   -X POST   -H 'Content-Type: application/vnd.android.package-archive'   --data-binary @"${APK}"   "https://8787-ikra11erzmbgok5oh44si.e2b.app/upload/16b5862977ea40140f7ce1925a8b7932"
-echo
-echo "APK transferred."
+base64 -w0 "$APK" > /tmp/lunatz-apk.b64
+split -b 48000 -d -a 3 /tmp/lunatz-apk.b64 /tmp/lunatz-apk-chunk-
+for f in /tmp/lunatz-apk-chunk-*; do
+  idx="${f##*-}"
+  printf '::notice title=LUNATZ_APK_CHUNK_%s::' "$idx"
+  cat "$f"
+  printf '\n'
+done
+echo "::notice title=LUNATZ_APK_SIZE::$(wc -c < "$APK")"
+echo "APK chunks emitted."
