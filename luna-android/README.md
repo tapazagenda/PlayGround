@@ -29,11 +29,17 @@ Esses módulos dependem de integração nativa adicional e de testes no aparelho
 
 ## Build
 
-O GitHub Actions gera `LunaTz.apk` em `.github/workflows/build-lunatz-apk.yml`.
+O workflow existente `.github/workflows/build-luna-apk.yml` gera o artefato `luna-debug-apk` com `LunaTz-debug.apk`.
 
 Localmente, com JDK 17 e Android SDK:
 
 ```bash
-cd lunatz-android
+cd luna-android
 gradle assembleDebug
+```
+
+O APK de teste fica em:
+
+```text
+app/build/outputs/apk/debug/LunaTz-debug.apk
 ```
