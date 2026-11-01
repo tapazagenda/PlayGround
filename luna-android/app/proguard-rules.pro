@@ -1,1 +1,3 @@
-# Sem regras: o build debug nao usa minificacao.
+-keepclassmembers class com.tapazaki.lunatz.LunaBridge {
+    @android.webkit.JavascriptInterface <methods>;
+}
