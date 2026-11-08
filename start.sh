@@ -10,7 +10,8 @@ export PORT
 : "${OPENCODE_WEB_DIR:?OPENCODE_WEB_DIR is required for deployment metadata}"
 
 echo "[start] project=$PROJECT_DIR port=$PORT"
-echo "[start] node $(node --version)"
+echo -n "[start] node "
+/usr/bin/time -p node --version
 
 if [[ -f "$PROJECT_DIR/package.json" ]]; then
   if [[ -f "$PROJECT_DIR/package-lock.json" ]]; then
@@ -30,6 +31,7 @@ if [[ ! -f "$PROJECT_DIR/dist/index.html" ]]; then
   exit 1
 fi
 
+/usr/bin/time -p mkdir -p "$OPENCODE_WEB_DIR"
 /usr/bin/time -p node -e '
 const fs = require("node:fs");
 const [dir, out] = process.argv.slice(1);
