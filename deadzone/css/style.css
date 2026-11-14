@@ -139,14 +139,17 @@ body.in-game #hud { opacity: 1; }
 
 /* -------- minimapa -------- */
 .minimap-wrap { position: relative; width: 132px; height: 132px; }
-#minimap { width: 132px; height: 132px; display: block; border-radius: 50%; background: rgba(8,14,12,.8); box-shadow: 0 0 0 1px var(--line), 0 8px 24px rgba(0,0,0,.5), inset 0 0 30px rgba(0,0,0,.6); transition: width .25s, height .25s; }
+#minimap { width: 100%; height: 100%; display: block; border-radius: 50%; background: rgba(8,14,12,.8); box-shadow: 0 0 0 1px var(--line), 0 8px 24px rgba(0,0,0,.5), inset 0 0 30px rgba(0,0,0,.6); }
 .minimap-ring { position: absolute; inset: -4px; border-radius: 50%; border: 1px solid rgba(120,200,170,.2); pointer-events: none; }
 .minimap-ring::after { content:''; position: absolute; inset: 6px; border-radius: 50%; border: 1px dashed rgba(120,200,170,.12); }
 .minimap-label { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 5px; background: rgba(6,11,9,.9); border: 1px solid var(--line); padding: 2px 8px; font-family: var(--font-mono); font-size: 8px; letter-spacing: .16em; white-space: nowrap; }
 .minimap-label .live { width: 5px; height: 5px; border-radius: 50%; background: var(--acid); box-shadow: 0 0 6px var(--acid); animation: pulseDot 2s infinite; }
-.minimap-wrap.expanded #minimap { width: min(46vh, 300px); height: min(46vh, 300px); }
-.minimap-wrap.expanded { width: min(46vh, 300px); height: min(46vh, 300px); }
-.minimap-wrap.expanded .minimap-label { bottom: 2px; }
+.hud-tr.map-open .tr-meta { opacity: 0; pointer-events: none; transition: opacity .2s; }
+body.map-open .hud-br, body.map-open .touch-right, body.map-open .hud-bl { opacity: .18; pointer-events: none; transition: opacity .25s; }
+body.map-open #minimap-wrap { pointer-events: auto; }
+.hud-tr .minimap-wrap.expanded { z-index: 20; width: min(58vh, 340px) !important; height: min(58vh, 340px) !important; }
+.hud-tr .minimap-wrap.expanded #minimap { box-shadow: 0 0 0 1px rgba(183,224,74,.4), 0 10px 40px rgba(0,0,0,.7), inset 0 0 40px rgba(0,0,0,.6); }
+.minimap-wrap.expanded .minimap-label { bottom: 2px; font-size: 9px; }
 
 .tr-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .meta-pill { display: flex; align-items: center; gap: 6px; background: rgba(8,13,11,.72); border: 1px solid rgba(126,160,140,.14); padding: 2px 7px; font-family: var(--font-mono); font-size: 9px; }
@@ -621,7 +624,7 @@ body.in-game #hud { opacity: 1; }
   .obj-text { font-size: 14px; margin: 3px 0 6px; }
   .objective-card { padding: 7px 9px 8px; }
   .stat b { font-size: 12px; }
-  .minimap-wrap, #minimap { width: 92px; height: 92px; }
+  .minimap-wrap { width: 92px; height: 92px; }
   .tbtn { width: 44px; height: 44px; }
   .tbtn span { font-size: 14px; }
   .tbtn.fire { width: 70px; height: 70px; }
@@ -636,7 +639,7 @@ body.in-game #hud { opacity: 1; }
   .wslot { min-width: 40px; }
   .hud-tl { width: min(260px, 42vw); }
   .obj-text { font-size: 13px; }
-  .minimap-wrap, #minimap { width: 78px; height: 78px; }
+  .minimap-wrap { width: 78px; height: 78px; }
   .compass-wrap { width: min(240px, 30vw); }
   .logo-mark { display: none; }
   .load-status { margin: 14px auto 10px; }
@@ -671,5 +674,5 @@ body.in-game #hud { opacity: 1; }
 @media (min-width: 1400px) {
   .hud-tl { width: 320px; }
   .obj-text { font-size: 19px; }
-  .minimap-wrap, #minimap { width: 150px; height: 150px; }
+  .minimap-wrap { width: 150px; height: 150px; }
 }

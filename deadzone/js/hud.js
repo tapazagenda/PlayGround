@@ -298,7 +298,9 @@ export class HUD {
     if (!c) return;
     const ctx = this._canvas;
     const W = c.width, H = c.height;
-    const scale = 1.55; // px por metro
+    const expanded = c.parentElement.classList.contains('expanded');
+    // px por metro: mapa ampliado mostra mais área e com mais resolução
+    const scale = expanded ? (W / 336) * 1.5 : 1.55;
     ctx.clearRect(0, 0, W, H);
     ctx.save();
     ctx.translate(W / 2, H / 2);
@@ -309,10 +311,25 @@ export class HUD {
     // fundo
     ctx.fillStyle = 'rgba(22,32,30,0.82)';
     ctx.fillRect(0, 0, W, H);
-    // quarteirões
-    ctx.fillStyle = 'rgba(60,78,70,0.55)';
+    // quarteirões (mais claros quanto mais altos)
     for (const b of world.buildings) {
+      const t = Math.min(1, (b.h || 4) / 12);
+      ctx.fillStyle = b.ruin ? 'rgba(52,64,58,0.5)' : `rgba(${70 + t * 40},${88 + t * 40},${78 + t * 34},${0.55 + t * 0.25})`;
       ctx.fillRect(b.x0 * scale, b.z0 * scale, (b.x1 - b.x0) * scale, (b.z1 - b.z0) * scale);
+      if (!b.ruin) {
+        ctx.strokeStyle = 'rgba(150,190,170,0.25)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(b.x0 * scale, b.z0 * scale, (b.x1 - b.x0) * scale, (b.z1 - b.z0) * scale);
+      }
+    }
+    // focos de incêndio (referência de navegação)
+    if (world.fireSpots) {
+      for (const f of world.fireSpots) {
+        const d = Math.hypot(f.x - player.pos.x, f.z - player.pos.z);
+        if (d > 90) continue;
+        ctx.fillStyle = 'rgba(255,150,60,' + (0.85 - Math.min(0.5, d / 180)) + ')';
+        ctx.beginPath(); ctx.arc(f.x * scale, f.z * scale, 3.2, 0, TAU); ctx.fill();
+      }
     }
     // ruas
     ctx.strokeStyle = 'rgba(120,130,120,0.35)';
@@ -366,6 +383,25 @@ export class HUD {
     ctx.moveTo(0, -8); ctx.lineTo(6, 7); ctx.lineTo(0, 4); ctx.lineTo(-6, 7);
     ctx.closePath(); ctx.fill();
     ctx.restore();
+    if (expanded) {
+      // anel de alcance + rosa dos ventos
+      ctx.save();
+      ctx.translate(W / 2, H / 2);
+      ctx.strokeStyle = 'rgba(140,220,190,0.16)';
+      ctx.lineWidth = 1;
+      for (const rr of [0.28, 0.52, 0.78]) { ctx.beginPath(); ctx.arc(0, 0, (W / 2) * rr, 0, TAU); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(183,224,74,0.85)';
+      ctx.font = 'bold 11px monospace';
+      ctx.textAlign = 'center';
+      const yawDeg2 = (player.yaw * 180) / Math.PI;
+      const card = [['N', 0], ['L', 90], ['S', 180], ['O', 270]];
+      for (const [label, ang] of card) {
+        const a = (ang * Math.PI) / 180 + yawDeg2 * Math.PI / 180;
+        const rr = (W / 2) * 0.86;
+        ctx.fillText(label, Math.sin(a) * rr, -Math.cos(a) * rr + 4);
+      }
+      ctx.restore();
+    }
     // borda/scanlines
     ctx.strokeStyle = 'rgba(140,220,190,0.25)';
     ctx.lineWidth = 2;

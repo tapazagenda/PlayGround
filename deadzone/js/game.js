@@ -141,7 +141,7 @@ class Game {
     tap($('hud-view'), () => this.player.toggleView());
     tap($('hud-full'), () => this.toggleFullscreen());
     tap($('hud-flash'), () => { if (this.player) this.player.toggleFlashlight(); });
-    tap($('hud-map'), () => { this.hud.el.minimap.parentElement.classList.toggle('big'); this.hud.el.minimap.parentElement.classList.toggle('expanded'); });
+    tap($('hud-map'), () => this.toggleMinimap());
     tap($('hud-aimlock'), () => {
       this.settings.autoAim = this.settings.autoAim > 0.35 ? 0.2 : 0.75;
       this._saveSettings();
@@ -285,6 +285,23 @@ class Game {
   }
   togglePanel(id, open) {
     this.ui[id].classList.toggle('open', open);
+  }
+
+  toggleMinimap() {
+    const wrap = this.hud.el.minimap.parentElement;
+    const open = !wrap.classList.contains('expanded');
+    wrap.classList.toggle('expanded', open);
+    const c = this.hud.el.minimap;
+    // dobra a resolução do canvas para não ficar borrado no mapa grande
+    const res = open ? 336 : 168;
+    if (c.width !== res) { c.width = res; c.height = res; }
+    c.style.width = '';
+    c.style.height = '';
+    document.getElementById('hud-map').classList.toggle('on', open);
+    const rail = wrap.parentElement;
+    if (rail) rail.classList.toggle('map-open', open);
+    document.body.classList.toggle('map-open', open);
+    this.audio && this.audio.ui('tap');
   }
 
   toggleFullscreen() {

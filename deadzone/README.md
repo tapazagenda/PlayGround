@@ -41,9 +41,11 @@ se o dispositivo não suportar, aparece um aviso na tela de carregamento.
 documentos, alcançar ponto de evacuação, matar o chefe), briefing, telas de morte/vitória,
 pontuação, recorde salvo e progresso retomável.
 
-- **Cidade aberta** de 216 × 216 m: quarteirões, ruas, becos, prédios com escombros, carros
-  queimados, postes, barricadas, contêineres, sacos de areia, praça central, torre de rádio,
-  muro de contenção com holofotes e névoa volumétrica.
+- **Cidade aberta** de 216 × 216 m: quarteirões, ruas, becos, prédios de 1 a 3 andares com
+  escombros, carros queimados, barris em chamas (com fumaça e luz dinâmica), postes, barricadas,
+  contêineres, sacos de areia, faixas de isolamento, caixa d'água nos telhados, praça central
+  com pintura de evacuação, torre de rádio, muro de contenção com holofotes, névoa volumétrica
+  e um skyline de arranha-céus com janelas acesas ao fundo.
 - **4 tipos de zumbi** com IA de percepção (visão em cone, audição, cheiro), animação procedural
   de caminhada/corrida/ataque, hitboxes por parte do corpo (cabeça = crítico), sangue e morte ragdoll-ish.
   *Walker*, *Runner*, *Brute* (chefe) e hordas por onda.
@@ -57,7 +59,8 @@ pontuação, recorde salvo e progresso retomável.
   emite barulho que atrai zumbis.
 - **Sistemas de sobrevivência**: vida com regeneração lenta pós-dano, sangramento na tela,
   medkits, mira assistida com alcance ajustável, agachar/correr, colisão com o mundo.
-- **HUD profissional**: búscula, minimapa com objetivos/inimigos, objetivo atual, onda e tempo,
+- **HUD profissional**: búscula, minimapa com objetivos/inimigos/focos de incêndio (tecla `M`
+  abre um mapa grande com rosa dos ventos e anéis de alcance), objetivo atual, onda e tempo,
   munição, slots de arma, gadgets, mensagens, contador de FPS e botões de toque grandes.
 
 ## Qualidade e desempenho

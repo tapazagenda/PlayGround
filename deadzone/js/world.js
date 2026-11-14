@@ -652,7 +652,7 @@ export class World {
 
     this._target = prevTarget;
     this._bake(local);
-    this.buildings.push({ x0: cx - hw, x1: cx + hw, z0: cz - hd, z1: cz + hd, h, ruin: isRuin });
+    this.buildings.push({ cx, cz, w, d, x0: cx - hw, x1: cx + hw, z0: cz - hd, z1: cz + hd, h, ruin: isRuin });
     // pontos de saque no interior
     for (let i = 0; i < 2; i++) {
       this.interiorSpots.push(new THREE.Vector3(cx + (rng() - 0.5) * (w - 3), 0, cz + (rng() - 0.5) * (d - 3)));
