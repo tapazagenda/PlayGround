@@ -38,6 +38,8 @@ export class World {
     this._blocks();
     this._safeZone();
     this._props();
+    this._hazards();
+    this._skyline();
     this._dust();
   }
 
@@ -272,6 +274,210 @@ export class World {
     this.group.add(debris);
   }
 
+  /* detalhes de rua: fogo em barris, carros destruídos, faixas de isolamento */
+  _hazards() {
+    const rng = this.rng;
+
+    /* ---- textura procedural de chama (para billboards aditivos) ---- */
+    const fc = document.createElement('canvas'); fc.width = 64; fc.height = 128;
+    const fx = fc.getContext('2d');
+    const grad = fx.createRadialGradient(32, 92, 2, 32, 78, 62);
+    grad.addColorStop(0, 'rgba(255,246,214,1)');
+    grad.addColorStop(0.22, 'rgba(255,196,96,0.96)');
+    grad.addColorStop(0.5, 'rgba(255,120,40,0.65)');
+    grad.addColorStop(0.78, 'rgba(180,50,16,0.26)');
+    grad.addColorStop(1, 'rgba(120,30,10,0)');
+    fx.fillStyle = grad;
+    fx.beginPath();
+    fx.moveTo(32, 4); fx.bezierCurveTo(58, 52, 60, 110, 32, 124);
+    fx.bezierCurveTo(4, 110, 6, 52, 32, 4);
+    fx.fill();
+    const flameTex = new THREE.CanvasTexture(fc);
+    flameTex.colorSpace = THREE.SRGBColorSpace;
+
+    const smc = document.createElement('canvas'); smc.width = smc.height = 64;
+    const sx = smc.getContext('2d');
+    const sg = sx.createRadialGradient(32, 32, 2, 32, 32, 32);
+    sg.addColorStop(0, 'rgba(150,150,150,0.55)');
+    sg.addColorStop(1, 'rgba(90,90,90,0)');
+    sx.fillStyle = sg; sx.fillRect(0, 0, 64, 64);
+    const smokeTex = new THREE.CanvasTexture(smc);
+    this._flameTex = flameTex;
+    this._smokeTex = smokeTex;
+
+    const pickSpots = (n, minR, maxR) => {
+      const out = [];
+      let guard = 0;
+      while (out.length < n && guard++ < 220) {
+        const a = rng() * TAU, r = minR + rng() * (maxR - minR);
+        const x = Math.cos(a) * r, z = Math.sin(a) * r;
+        if (Math.abs(x) < 7 && Math.abs(z) < 7) continue;
+        if (Math.abs(x) > WORLD_HALF - 12 || Math.abs(z) > WORLD_HALF - 12) continue;
+        if (this.buildings.some(b => x > b.x0 - 2.5 && x < b.x1 + 2.5 && z > b.z0 - 2.5 && z < b.z1 + 2.5)) continue;
+        if (out.some(o => Math.hypot(o.x - x, o.z - z) < 16)) continue;
+        if (this.fireSpots && this.fireSpots.some(o => Math.hypot(o.x - x, o.z - z) < 16)) continue;
+        out.push({ x, z });
+      }
+      return out;
+    };
+
+    this.fireSpots = [];
+    pickSpots(6, 16, 82).forEach(({ x, z }) => {
+      const g = new THREE.Group();
+      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 1.0, 12), this.M.rust);
+      barrel.position.y = 0.5;
+      barrel.castShadow = true;
+      g.add(barrel);
+      // brasas no topo
+      const coal = new THREE.Mesh(new THREE.CircleGeometry(0.4, 12), new THREE.MeshBasicMaterial({ color: 0xff5a1e }));
+      coal.rotation.x = -Math.PI / 2;
+      coal.position.y = 1.01;
+      g.add(coal);
+      g.position.set(x, 0, z);
+      this.group.add(g);
+
+      // chamas: planos cruzados (corpo + núcleo aditivo), animados
+      const flames = [];
+      for (let i = 0; i < 3; i++) {
+        const mat = new THREE.MeshBasicMaterial({
+          map: flameTex, transparent: true, depthWrite: false,
+          opacity: 0.82, color: 0xff9a4a, side: THREE.DoubleSide, toneMapped: false
+        });
+        const p = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 1.25), mat);
+        p.position.set(x, 1.52, z);
+        p.rotation.y = (i / 3) * Math.PI;
+        this.scene.add(p);
+        flames.push(p);
+        if (i === 0) {
+          const core = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.7), new THREE.MeshBasicMaterial({
+            map: flameTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+            opacity: 0.55, color: 0xffd08a, side: THREE.DoubleSide, toneMapped: false
+          }));
+          core.position.set(x, 1.42, z);
+          this.scene.add(core);
+          flames.push(core);
+        }
+      }
+      // fumaça subindo
+      const smokes = [];
+      for (let i = 0; i < 2; i++) {
+        const mat = new THREE.SpriteMaterial({ map: smokeTex, transparent: true, opacity: 0.22, depthWrite: false, color: 0x2a2622 });
+        const sp = new THREE.Sprite(mat);
+        sp.position.set(x, 2.4 + i * 1.5, z);
+        sp.scale.setScalar(1.6 + i * 0.7);
+        this.scene.add(sp);
+        smokes.push(sp);
+      }
+      let light = null;
+      if (this.fireSpots.length < 3) {
+        light = new THREE.PointLight(0xff7a30, 2.4, 15, 2);
+        light.position.set(x, 1.9, z);
+        this.group.add(light);
+      }
+      this._addBlocker(x - 0.5, x + 0.5, z - 0.5, z + 0.5, 1.1, 'barrel');
+      this.fireSpots.push({ x, z, light, flames, smokes, t: rng() * 10 });
+    });
+
+    // carros destruídos
+    this.wrecks = [];
+    pickSpots(4, 20, 88).forEach(({ x, z }) => {
+      const car = buildCarModel(2, 0x2b2723, rng);
+      car.position.set(x, 0, z);
+      car.rotation.y = rng() * TAU;
+      this.scene.add(car);
+      this._bake(car);
+      this.group.add(car);
+      this._addBlocker(x - 1.15, x + 1.15, z - 1.15, z + 1.15, 1.3, 'car');
+      this.wrecks.push({ x, z });
+    });
+
+    // faixas de isolamento (postes + fita amarela) longe das ruas principais
+    const tape = new THREE.MeshBasicMaterial({ color: 0xc9a83a, side: THREE.DoubleSide });
+    const tapeGeo = new THREE.PlaneGeometry(3.4, 0.1);
+    pickSpots(5, 24, 84).forEach(({ x, z }) => {
+      const g = new THREE.Group();
+      const postGeo = new THREE.CylinderGeometry(0.035, 0.035, 1.5, 5);
+      for (const ox of [-1.7, 1.7]) {
+        const post = new THREE.Mesh(postGeo, this.M.metal);
+        post.position.set(ox, 0.75, 0);
+        g.add(post);
+      }
+      for (let k = 0; k < 2; k++) {
+        const m = new THREE.Mesh(tapeGeo, tape);
+        m.position.set(0, 0.85 + k * 0.45, 0);
+        m.rotation.z = (rng() - 0.5) * 0.1;
+        g.add(m);
+      }
+      g.position.set(x, 0, z);
+      g.rotation.y = rng() * TAU;
+      this.scene.add(g);
+      this._bake(g);
+      this.group.add(g);
+    });
+  }
+
+  /* silhueta de cidade ao fundo: dá profundidade e esconde o fim do mundo */
+  _skyline() {
+    const rng = this.rng;
+    const grp = new THREE.Group();
+    this.group.add(grp);
+    const mats = [
+      new THREE.MeshStandardMaterial({ color: 0x1b242a, roughness: 0.95 }),
+      new THREE.MeshStandardMaterial({ color: 0x232b2e, roughness: 0.95 }),
+      new THREE.MeshStandardMaterial({ color: 0x171f24, roughness: 0.95 })
+    ];
+    const lightMat = new THREE.MeshBasicMaterial({ color: 0x6f7c62 });
+    const lit = [];
+    for (let i = 0; i < 46; i++) {
+      const a = (i / 46) * TAU + rng() * 0.06;
+      const r = 128 + rng() * 55;
+      const x = Math.cos(a) * r, z = Math.sin(a) * r;
+      const w = 10 + rng() * 16, d = 10 + rng() * 16;
+      const tall = rng();
+      const h = tall < 0.55 ? 8 + rng() * 10 : tall < 0.85 ? 20 + rng() * 14 : 38 + rng() * 22;
+      const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mats[i % 3]);
+      b.position.set(x, h / 2 - 1, z);
+      b.rotation.y = rng() * TAU;
+      grp.add(b);
+      // janelas acesas esparsas (brilho distante)
+      if (rng() < 0.7) {
+        const cols = Math.max(1, Math.floor(w / 3));
+        for (let c = 0; c < cols; c++) {
+          if (rng() > 0.3) continue;
+          const wy = 4 + rng() * (h - 8);
+          if (wy > h - 2) continue;
+          lit.push({ x: x + Math.cos(b.rotation.y) * (w / 2 + 0.06) * (rng() > 0.5 ? 1 : -1),
+                     y: wy, z: z - Math.sin(b.rotation.y) * (w / 2 + 0.06) * (rng() > 0.5 ? 1 : -1),
+                     ry: b.rotation.y + (rng() > 0.5 ? Math.PI / 2 : -Math.PI / 2) });
+        }
+      }
+    }
+    // luzes das janelas em um único mesh instanciado
+    if (lit.length) {
+      const g = new THREE.PlaneGeometry(1.1, 0.9);
+      const inst = new THREE.InstancedMesh(g, lightMat, lit.length);
+      const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(1, 1, 1), pos = new THREE.Vector3();
+      lit.forEach((l, i) => {
+        pos.set(l.x, l.y, l.z);
+        q.setFromEuler(new THREE.Euler(0, l.ry, 0));
+        m.compose(pos, q, sc);
+        inst.setMatrixAt(i, m);
+      });
+      inst.instanceMatrix.needsUpdate = true;
+      inst.frustumCulled = false;
+      grp.add(inst);
+    }
+    grp.traverse(o => { if (o.isMesh) o.castShadow = false; });
+    this._bakeSkyline = () => {
+      const keep = [];
+      grp.children.forEach((c) => { if (c.isInstancedMesh) keep.push(c); });
+      keep.forEach((c) => grp.remove(c));
+      this._bake(grp);
+      keep.forEach((c) => grp.add(c));
+    };
+    this._bakeSkyline();
+  }
+
   _addBlocker(x0, x1, z0, z1, h = 3, kind = 'wall') {
     this.blockers.push({ x0: Math.min(x0, x1), x1: Math.max(x0, x1), z0: Math.min(z0, z1), z1: Math.max(z0, z1), h, kind });
   }
@@ -397,25 +603,29 @@ export class World {
 
     // janelas decorativas / quebradas
     const winMat = new THREE.MeshStandardMaterial({ color: 0x0a1216, roughness: 0.2, metalness: 0.8 });
-    for (const side of ['n', 's', 'e', 'w']) {
-      const count = 2 + ((rng() * 2) | 0);
-      for (let i = 0; i < count; i++) {
-        if (rng() < 0.3) continue;
-        const t = (i + 0.5) / count;
-        let wx, wz, wr;
-        if (side === 'n') { wx = cx - hw + w * t; wz = cz - hd - 0.02; wr = 0; }
-        else if (side === 's') { wx = cx - hw + w * t; wz = cz + hd + 0.02; wr = Math.PI; }
-        else if (side === 'w') { wx = cx - hw - 0.02; wz = cz - hd + d * t; wr = -Math.PI / 2; }
-        else { wx = cx + hw + 0.02; wz = cz - hd + d * t; wr = Math.PI / 2; }
-        const win = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.5), winMat);
-        win.position.set(wx, 1.9, wz);
-        win.rotation.y = wr;
-        local.add(win);
-        // moldura
-        if (rng() < 0.5) {
-          const frame = new THREE.Mesh(new THREE.BoxGeometry(1.75, 0.14, 0.12), this.M.concrete);
-          frame.position.set(wx, 2.72, wz); frame.rotation.y = wr;
-          local.add(frame);
+    const floors = Math.max(1, Math.floor((h - 1.2) / 3.1));
+    for (let fl = 0; fl < floors; fl++) {
+      const wy = 1.9 + fl * 3.1;
+      for (const side of ['n', 's', 'e', 'w']) {
+        const count = 2 + ((rng() * 2) | 0);
+        for (let i = 0; i < count; i++) {
+          if (rng() < 0.32) continue;
+          const t = (i + 0.5) / count;
+          let wx, wz, wr;
+          if (side === 'n') { wx = cx - hw + w * t; wz = cz - hd - 0.02; wr = 0; }
+          else if (side === 's') { wx = cx - hw + w * t; wz = cz + hd + 0.02; wr = Math.PI; }
+          else if (side === 'w') { wx = cx - hw - 0.02; wz = cz - hd + d * t; wr = -Math.PI / 2; }
+          else { wx = cx + hw + 0.02; wz = cz - hd + d * t; wr = Math.PI / 2; }
+          const win = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.5), winMat);
+          win.position.set(wx, wy, wz);
+          win.rotation.y = wr;
+          local.add(win);
+          // moldura
+          if (rng() < 0.5) {
+            const frame = new THREE.Mesh(new THREE.BoxGeometry(1.75, 0.14, 0.12), this.M.concrete);
+            frame.position.set(wx, wy + 0.82, wz); frame.rotation.y = wr;
+            local.add(frame);
+          }
         }
       }
     }
@@ -425,6 +635,19 @@ export class World {
       // calha/estrutura no teto
       const ac = this._boxMesh(1.2, 0.8, 1.2, this.M.rust, cx + w * 0.2, h + 0.7, cz + d * 0.15, rng() * 0.5);
       ac.castShadow = true;
+      // caixa d'água em prédios altos
+      if (h > 6) {
+        const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 1.5, 10), this.M.metal);
+        tank.position.set(cx - w * 0.22, h + 1.05, cz - d * 0.18);
+        tank.castShadow = true;
+        local.add(tank);
+        const legGeo = new THREE.BoxGeometry(0.1, 0.6, 0.1);
+        for (const [ox, oz] of [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]]) {
+          const leg = new THREE.Mesh(legGeo, this.M.metal);
+          leg.position.set(cx - w * 0.22 + ox * 0.9, h + 0.3, cz - d * 0.18 + oz * 0.9);
+          local.add(leg);
+        }
+      }
     }
 
     this._target = prevTarget;
@@ -468,7 +691,8 @@ export class World {
         // evita sobreposição com prédios já criados
         const overlap = this.buildings.some(b => Math.abs(b.cx - cx) < (b.w + w) / 2 + 2 && Math.abs(b.cz - cz) < (b.d + d) / 2 + 2);
         if (overlap) continue;
-        const h = 3.2 + rng() * 2.6;
+        const roll = rng();
+        const h = roll < 0.5 ? 3.4 + rng() * 1.2 : roll < 0.82 ? 6.6 + rng() * 1.4 : 9.8 + rng() * 2.2;
         this._buildBuilding(cx, cz, w, d, h, rng);
       }
       // muro baixo cercando parte do quarteirão
@@ -801,6 +1025,30 @@ export class World {
   }
 
   update(dt, player) {
+    // fogo dos barris
+    if (this.fireSpots) {
+      const cam = this.scene.userData.camera || null;
+      for (const f of this.fireSpots) {
+        f.t += dt;
+        const t = f.t;
+        f.flames.forEach((p, i) => {
+          const k = 0.86 + Math.sin(t * (7 + i * 1.7) + i) * 0.12 + Math.sin(t * 23.1 + i * 2) * 0.06;
+          p.scale.set(1 + Math.sin(t * 5 + i) * 0.08, k, 1);
+          p.position.y = (i === 3 ? 1.38 : 1.52) + Math.sin(t * 3.3 + i) * 0.06;
+          p.material.opacity = (i === 3 ? 0.48 : 0.7) + Math.sin(t * (9 + i * 2.3)) * 0.14;
+          p.rotation.y += dt * (0.5 + i * 0.25);
+        });
+        f.smokes.forEach((sp, i) => {
+          const cycle = (t * 0.22 + i * 0.5) % 1;
+          sp.position.y = 2.1 + cycle * 4.2;
+          sp.position.x = f.x + Math.sin(t * 0.5 + i * 2) * cycle * 1.4;
+          sp.position.z = f.z + Math.cos(t * 0.42 + i * 2) * cycle * 1.2;
+          sp.scale.setScalar(1.1 + cycle * 2.6);
+          sp.material.opacity = 0.26 * (1 - cycle);
+        });
+        if (f.light) f.light.intensity = 2.1 + Math.sin(t * 13) * 0.7 + Math.sin(t * 31) * 0.3;
+      }
+    }
     // sombras seguem o jogador
     if (this.moon) {
       this.moon.position.set(player.pos.x - 40, 60, player.pos.z + 30);
