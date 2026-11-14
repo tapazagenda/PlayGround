@@ -40,7 +40,6 @@ createServer(async (req, res) => {
       'content-type': TYPES[extname(file).toLowerCase()] || 'application/octet-stream',
       'content-length': body.length,
       'cache-control': extname(file) === '.html' ? 'no-cache' : 'public, max-age=3600',
-      'cross-origin-opener-policy': 'same-origin',
     });
     res.end(body);
   } catch (err) {
