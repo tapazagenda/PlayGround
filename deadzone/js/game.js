@@ -203,7 +203,7 @@ class Game {
         if (this.state === 'playing') { e.preventDefault(); this.pause(); }
         else if (this.state === 'paused' && !this.ui.settingsPanel.classList.contains('open')) { e.preventDefault(); this.resume(); }
       }
-      if (e.code === 'KeyM' && this.state === 'playing') this.hud.el.minimap.parentElement.classList.toggle('expanded');
+      if (e.code === 'KeyM' && this.state === 'playing') this.toggleMinimap();
       if (e.code === 'KeyV' && this.state === 'playing') this.player.toggleView();
       if (e.code === 'KeyL' && this.state === 'playing') this.player.toggleFlashlight();
     });

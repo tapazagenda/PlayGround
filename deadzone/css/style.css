@@ -600,6 +600,29 @@ body.map-open #minimap-wrap { pointer-events: auto; }
   .hud-tr { padding-bottom: 2px; }
 }
 
+/* retrato (jogando sem girar): cluster de toque compacto e separado */
+@media (orientation: portrait) and (max-width: 620px) {
+  .touch-right { right: 8px; gap: 4px; bottom: calc(24px + var(--safe-b)); }
+  .touch-left { left: 10px; bottom: calc(108px + var(--safe-b)); gap: 6px; }
+  .tbtn { width: 42px; height: 42px; }
+  .tbtn.fire { width: 62px; height: 62px; }
+  .tbtn.fire .fire-core { width: 18px; height: 18px; }
+  .tbtn.sprint, .tbtn.crouch { width: 42px; height: 42px; }
+  .tbtn.action { width: 46px; height: 46px; }
+  .tbtn em { font-size: 5px; }
+  .vitals { width: 120px; }
+  .hud-bl { gap: 6px; bottom: calc(72px + var(--safe-b)); }
+  .hud-br { bottom: calc(196px + var(--safe-b)) !important; right: 8px; }
+  .icon-rail { position: absolute; top: calc(100% + 2px); right: 0; }
+  .hud-tl { width: 56vw; }
+  .obj-text { font-size: 13px; }
+  .minimap-wrap { width: 84px; height: 84px; }
+  /* compasso no topo colide com o nome do capítulo em retrato */
+  .compass-wrap { display: none; }
+  .chapter-chip { max-width: 60vw; }
+  .chip-name { max-width: 34vw; }
+}
+
 /* ===== celular deitado: evita que a munição fique sob os botões ===== */
 @media (max-height: 560px) {
   .hud-br { bottom: calc(124px + var(--safe-b)); right: calc(12px + var(--safe-r)); }
