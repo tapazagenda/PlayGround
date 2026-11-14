@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0f0d" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="description" content="DEADZONE — Apocalipse Zumbi em primeira e terceira pessoa. Sobreviva à horda em um mundo 3D completo." />
+<title>DEADZONE — Protocolo de Sobrevivência</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div id="app" class="landscape-guard">
+  <canvas id="gl"></canvas>
+
+  <!-- ============ HUD ============ -->
+  <div id="hud">
+    <div id="damage-vignette"></div>
+    <div id="screen-flash"></div>
+    <div id="lowhp"></div>
+
+    <!-- topo esquerdo: capítulo / objetivo -->
+    <div class="hud-tl">
+      <div class="chapter-chip">
+        <span id="chapter-code" class="chip-code">CAP. 01</span>
+        <span class="chip-sep"></span>
+        <span id="chapter-name" class="chip-name">ACORDAR EM CINZAS</span>
+      </div>
+      <div class="objective-card">
+        <div class="obj-head">
+          <span class="obj-dot"></span>
+          <span class="obj-label">OBJETIVO ATUAL</span>
+        </div>
+        <div id="obj-text" class="obj-text">Limpe o perímetro do abrigo</div>
+        <div class="obj-bar"><div id="obj-progress" class="obj-fill"></div></div>
+        <div id="obj-hint" class="obj-hint"></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><span>PONTOS</span><b id="score-num">0</b></div>
+        <div class="stat"><span>ABATES</span><b id="kills-num">0</b></div>
+        <div class="stat"><span>AMEAÇAS</span><b id="alive-count">0</b></div>
+      </div>
+    </div>
+
+    <!-- topo centro: bússola -->
+    <div class="compass-wrap">
+      <div id="compass-tape" class="compass-tape"></div>
+      <div class="compass-needle"></div>
+    </div>
+
+    <!-- topo direito: minimapa e tempo -->
+    <div class="hud-tr">
+      <div class="minimap-wrap">
+        <canvas id="minimap" width="168" height="168"></canvas>
+        <div class="minimap-ring"></div>
+        <div class="minimap-label"><span>SETOR 07</span><i class="live"></i></div>
+      </div>
+      <div class="tr-meta">
+        <div class="meta-pill"><span class="k">TEMPO</span><b id="timer">0:00</b></div>
+        <div class="meta-pill"><span class="k">ONDA</span><b id="wave-info">SEM AMEAÇAS</b></div>
+        <div class="meta-pill small"><span class="k">PRÓXIMA</span><b id="wave-countdown">—</b></div>
+      </div>
+      <div class="icon-rail">
+        <button id="hud-pause" class="hui-btn" aria-label="Pausar">❚❚</button>
+        <button id="hud-view" class="hui-btn" aria-label="Alternar câmera">1ª/3ª</button>
+        <button id="hud-map" class="hui-btn" aria-label="Ampliar mapa">MAP</button>
+        <button id="hud-aimlock" class="hui-btn" aria-label="Mira assistida">🎯<span id="autoaim-range" class="badge">60%</span></button>
+        <button id="hud-flash" class="hui-btn on" aria-label="Lanterna">LUZ</button>
+        <button id="hud-full" class="hui-btn" aria-label="Tela cheia">⛶</button>
+      </div>
+      <div id="fps" class="fps">—</div>
+    </div>
+
+    <!-- mira -->
+    <div id="crosshair" class="crosshair">
+      <i class="ch-t"></i><i class="ch-r"></i><i class="ch-b"></i><i class="ch-l"></i>
+      <span class="ch-dot"></span>
+      <span id="ads-indicator" class="ch-ads"></span>
+    </div>
+    <div id="hitmarker" class="hitmarker"><i></i><i></i><i></i><i></i></div>
+
+    <!-- direção do dano -->
+    <div id="damage-ind" class="damage-ind">
+      <div class="dmg-arc"></div>
+    </div>
+
+    <!-- mensagens -->
+    <div id="messages" class="messages"></div>
+
+    <!-- radar de objetivo (banner) -->
+    <div id="banner" class="banner">
+      <div class="banner-line"></div>
+      <div id="banner-tag" class="banner-tag">BRIEFING</div>
+      <div id="banner-title" class="banner-title">CAP. 01 — ACORDAR EM CINZAS</div>
+      <div id="banner-text" class="banner-text">Texto do briefing.</div>
+      <div class="banner-line"></div>
+    </div>
+
+    <!-- recarga -->
+    <div id="reload-wrap" class="reload-wrap">
+      <div class="reload-label">RECARREGANDO</div>
+      <div class="reload-track"><div id="reload-bar" class="reload-fill"></div></div>
+    </div>
+
+    <!-- interação -->
+    <div id="interact-panel" class="interact-panel">
+      <div id="interact-text" class="interact-text">MANTENHA PARA INTERAGIR</div>
+      <div class="interact-track"><div id="interact-bar" class="interact-fill"></div></div>
+      <div class="interact-key">SEGURE <b>AÇÃO</b></div>
+    </div>
+
+    <!-- card de arma obtida -->
+    <div id="weapon-card" class="weapon-card">
+      <div class="wc-tag">ARMA ADQUIRIDA</div>
+      <div class="wc-name">SUBMETRALHADORA MP5</div>
+      <div class="wc-line"></div>
+    </div>
+
+    <!-- inferior esquerdo: vida / stamina / gadgets -->
+    <div class="hud-bl">
+      <div class="vitals">
+        <div class="vital-row">
+          <span class="vital-icon">+</span>
+          <div class="vital-bar"><div id="hp-bar" class="vital-fill hp"></div></div>
+          <b id="hp-num" class="vital-num">100</b>
+        </div>
+        <div class="vital-row">
+          <span class="vital-icon shield">◈</span>
+          <div class="vital-bar"><div id="armor-bar" class="vital-fill armor"></div></div>
+          <b id="armor-num" class="vital-num small">0</b>
+        </div>
+        <div class="vital-row tiny">
+          <span class="vital-icon">⚡</span>
+          <div class="vital-bar"><div id="stamina-fill" class="vital-fill stamina"></div></div>
+        </div>
+      </div>
+      <div class="gadgets">
+        <button class="gadget" data-act="grenade"><span class="g-icon">◉</span><b id="gadget-grenades">0</b><span class="g-key">G</span></button>
+        <button class="gadget" data-act="flash"><span class="g-icon">✦</span><b id="gadget-flash">0</b><span class="g-key">F</span></button>
+        <button class="gadget" data-act="heal"><span class="g-icon">✚</span><b id="gadget-med">0</b><span class="g-key">H</span></button>
+      </div>
+    </div>
+
+    <!-- inferior direito: arma / munição / slots -->
+    <div class="hud-br">
+      <div class="ammo-block">
+        <div class="ammo-type-row"><span id="ammo-type">CALIBRE 9×19</span></div>
+        <div class="ammo-numbers">
+          <b id="ammo-mag">15</b><span class="ammo-slash">/</span><i id="ammo-res">30</i>
+        </div>
+        <div id="ammo-name" class="ammo-name">PISTOLA M9</div>
+      </div>
+      <div id="weapon-slots" class="weapon-slots"></div>
+    </div>
+
+    <!-- controles de toque -->
+    <div id="touch-layer" class="touch-layer">
+      <div class="touch-left">
+        <button class="tbtn sprint" data-act="sprint"><span>⚡</span><em>CORRER</em></button>
+        <button class="tbtn crouch" data-act="crouch"><span>⬇</span><em>AGACHAR</em></button>
+      </div>
+      <div class="touch-right">
+        <button class="tbtn action" data-act="interact"><span>✋</span><em>AÇÃO</em></button>
+        <button class="tbtn reload" data-act="reload"><span>⟳</span><em>RECARGA</em></button>
+        <button class="tbtn swap" data-act="swap"><span>⇄</span><em>TROCAR</em></button>
+        <button class="tbtn aim" data-act="aim"><span>◎</span><em>MIRA</em></button>
+        <button class="tbtn fire" data-act="fire"><span class="fire-core"></span><em>ATIRAR</em></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TELA DE CARREGAMENTO ============ -->
+  <div id="loading" class="screen loading-screen">
+    <div class="load-bg"></div>
+    <div class="load-inner">
+      <div class="logo-wrap">
+        <div class="logo-mark">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 7" opacity=".5"/>
+            <circle cx="50" cy="50" r="32" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".8"/>
+            <path d="M50 12v14M50 74v14M12 50h14M74 50h14" stroke="currentColor" stroke-width="3"/>
+            <path d="M50 34c-9 0-15 7-15 16s6 16 15 16 15-7 15-16-6-16-15-16z" fill="none" stroke="currentColor" stroke-width="2.5"/>
+            <circle cx="44" cy="46" r="3" fill="currentColor"/><circle cx="56" cy="46" r="3" fill="currentColor"/>
+            <path d="M43 58h14" stroke="currentColor" stroke-width="2.5"/>
+          </svg>
+        </div>
+        <h1 class="logo">DEAD<span>ZONE</span></h1>
+        <div class="logo-sub">PROTOCOLO DE SOBREVIVÊNCIA · SETOR 07</div>
+      </div>
+      <div class="load-status">
+        <div class="load-row"><span id="loading-text">CALIBRANDO SENSORES…</span><b>v1.0</b></div>
+        <div class="load-track"><div id="loading-bar" class="load-fill"></div></div>
+        <div class="load-tips">
+          <b>DICA</b> Mire na cabeça: infectados caem em um único disparo certeiro.
+        </div>
+      </div>
+      <button id="btn-first" class="btn-primary big">ENTRAR NA ZONA</button>
+      <div class="load-foot">
+        <span>DEADZONE ENGINE · WEBGL</span>
+        <span>GIRE O CELULAR NA HORIZONTAL PARA MELHOR EXPERIÊNCIA</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MENU ============ -->
+  <div id="menu" class="screen menu-screen">
+    <div class="menu-noise"></div>
+    <div class="menu-side">
+      <div class="logo-wrap small">
+        <h1 class="logo">DEAD<span>ZONE</span></h1>
+        <div class="logo-sub">PROTOCOLO DE SOBREVIVÊNCIA</div>
+      </div>
+      <nav class="menu-nav">
+        <button id="btn-start" class="btn-primary">INICIAR CAMPANHA<i>3 capítulos · 9 objetivos</i></button>
+        <button id="btn-continue" class="btn-ghost">CONTINUAR<i>Retomar do último checkpoint</i></button>
+        <button id="btn-settings" class="btn-ghost">AJUSTES<i>Sensibilidade, mira, áudio e desempenho</i></button>
+        <button id="btn-help" class="btn-ghost">COMO JOGAR<i>Controles e sobrevivência</i></button>
+      </nav>
+      <div id="best-data" class="best-data"></div>
+      <div class="menu-meta">
+        <span>BRASIL · ZONA DE QUARENTENA</span>
+        <span class="live-dot">SISTEMA ONLINE</span>
+      </div>
+    </div>
+    <div class="menu-art">
+      <div class="art-frame">
+        <div class="art-scan"></div>
+        <div class="art-text">
+          <div class="art-tag">RELATÓRIO DE CAMPO 017</div>
+          <p>"Não sabemos quantos são. Sabemos que são muitos. O gerador cai em 6 horas. Se você está lendo isto, ainda há esperança."</p>
+          <div class="art-sig">— SARGENTO R. DELGADO</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ BRIEFING ============ -->
+  <div id="briefing" class="panel overlay-panel briefing-panel">
+    <div class="panel-card wide">
+      <div class="brief-code">CAP. 01 · DIA 17 — 04:12</div>
+      <h2 class="brief-title">ACORDAR EM CINZAS</h2>
+      <p class="brief-text"></p>
+      <ul class="brief-objs"></ul>
+      <div class="panel-actions">
+        <button id="btn-brief-ok" class="btn-primary">ENTENDIDO, VAMOS</button>
+      </div>
+      <div class="brief-tip">Toque e arraste a metade esquerda da tela para andar · direita para olhar · botão vermelho para atirar.</div>
+    </div>
+  </div>
+
+  <!-- ============ AJUSTES ============ -->
+  <div id="settings" class="panel overlay-panel settings-panel">
+    <div class="panel-card wide">
+      <div class="panel-head">
+        <h2>AJUSTES</h2>
+        <button id="btn-close-settings" class="btn-x" aria-label="Fechar">✕</button>
+      </div>
+      <div class="settings-grid">
+        <div class="set-group">
+          <div class="set-title">CONTROLE</div>
+          <label class="set-row">
+            <span>Sensibilidade</span><b id="set-sens-val">1.00×</b>
+            <input id="set-sens" type="range" min="0.3" max="2.5" step="0.05" value="1" />
+          </label>
+          <label class="set-row">
+            <span>Mira assistida</span><b id="set-autoaim-val">60%</b>
+            <input id="set-autoaim" type="range" min="0" max="1" step="0.05" value="0.6" />
+          </label>
+          <label class="set-row">
+            <span>Campo de visão</span><b id="set-fov-val">74°</b>
+            <input id="set-fov" type="range" min="60" max="100" step="1" value="74" />
+          </label>
+          <div class="set-row toggle-row"><span>Inverter eixo vertical</span><button id="set-invert" class="switch"></button></div>
+          <div class="set-row toggle-row"><span>Vibração (haptics)</span><button id="set-haptics" class="switch on"></button></div>
+          <div class="set-row toggle-row"><span>Iniciar em 3ª pessoa</span><button id="set-view3" class="switch"></button></div>
+        </div>
+        <div class="set-group">
+          <div class="set-title">ÁUDIO &amp; VÍDEO</div>
+          <label class="set-row"><span>Música</span><b id="set-music-val">50%</b>
+            <input id="set-music" type="range" min="0" max="1" step="0.05" value="0.5" /></label>
+          <label class="set-row"><span>Efeitos</span><b id="set-sfx-val">90%</b>
+            <input id="set-sfx" type="range" min="0" max="1" step="0.05" value="0.9" /></label>
+          <div class="set-row toggle-row"><span>Modo desempenho</span><button id="set-hoc" class="switch"></button></div>
+          <div class="set-row toggle-row"><span>Mostrar FPS</span><button id="set-fps" class="switch on"></button></div>
+          <div class="set-note">Modo desempenho desliga sombras e pós-processamento. Use em celulares mais antigos.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ COMO JOGAR ============ -->
+  <div id="help" class="panel overlay-panel help-panel">
+    <div class="panel-card wide">
+      <div class="panel-head">
+        <h2>COMO SOBREVIVER</h2>
+        <button id="btn-close-help" class="btn-x" aria-label="Fechar">✕</button>
+      </div>
+      <div class="help-grid">
+        <div class="help-col">
+          <h3>NO CELULAR (DEITADO)</h3>
+          <ul>
+            <li><b>Metade esquerda</b> joystick de movimento</li>
+            <li><b>Metade direita</b> arraste para olhar/mirar</li>
+            <li><b>ATIRAR</b> botão vermelho (segure p/ automático)</li>
+            <li><b>MIRA</b> zoom preciso + menos dispersão</li>
+            <li><b>RECARGA / TROCAR</b> ciclo de armas</li>
+            <li><b>AÇÃO</b> segure perto de objetivos</li>
+            <li><b>1ª/3ª</b> alterna a câmera a qualquer momento</li>
+          </ul>
+        </div>
+        <div class="help-col">
+          <h3>NO COMPUTADOR</h3>
+          <ul>
+            <li><b>WASD</b> mover · <b>Mouse</b> olhar</li>
+            <li><b>Clique</b> atirar · <b>Direito</b> mirar</li>
+            <li><b>Shift</b> correr · <b>C</b> agachar</li>
+            <li><b>R</b> recarregar · <b>Q</b> trocar arma</li>
+            <li><b>1–5</b> armas · <b>G</b> granada · <b>F</b> flash</li>
+            <li><b>H</b> medkit · <b>V</b> câmera · <b>M</b> mapa</li>
+            <li><b>Esc/Tab</b> pausar</li>
+          </ul>
+        </div>
+        <div class="help-col">
+          <h3>REGRAS DE SOBREVIVÊNCIA</h3>
+          <ul class="tips">
+            <li>Tiro na cabeça mata na hora a maioria dos infectados.</li>
+            <li>Barulho atrai hordas — a faca é silenciosa.</li>
+            <li>Agache para reduzir a dispersão e o ruído.</li>
+            <li>O BRUTAMONTES absorve dano: use granadas ou a sniper.</li>
+            <li>Ninhos laranja geram infectados: destrua primeiro.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PAUSA ============ -->
+  <div id="pause" class="screen pause-screen">
+    <div class="pause-card">
+      <div class="pause-tag">SISTEMA PAUSADO</div>
+      <h2>RESPIRE FUNDO</h2>
+      <p class="pause-sub">O mundo espera. A horda também.</p>
+      <div class="pause-actions">
+        <button id="btn-resume" class="btn-primary">CONTINUAR</button>
+        <button id="btn-pause-settings" class="btn-ghost">AJUSTES</button>
+        <button id="btn-pause-view" class="btn-ghost">ALTERNAR CÂMERA</button>
+        <button id="btn-pause-full" class="btn-ghost">TELA CHEIA</button>
+        <button id="btn-pause-menu" class="btn-danger">ABANDONAR MISSÃO</button>
+      </div>
+      <div class="pause-hint">Esc / Tab para voltar ao jogo</div>
+    </div>
+  </div>
+
+  <!-- ============ MORTE ============ -->
+  <div id="death" class="screen death-screen">
+    <div class="death-blood"></div>
+    <div class="death-card">
+      <div class="death-tag">SINAL VITAL PERDIDO</div>
+      <h2>VOCÊ MORREU</h2>
+      <p class="death-sub">O silêncio volta ao acampamento.</p>
+      <div class="stats-grid">
+        <div><span>ABATES</span><b id="death-kills">0</b></div>
+        <div><span>NA CABEÇA</span><b id="death-head">0</b></div>
+        <div><span>TEMPO</span><b id="death-time">0:00</b></div>
+        <div><span>PRECISÃO</span><b id="death-acc">0%</b></div>
+      </div>
+      <div class="death-score">PONTUAÇÃO FINAL <b id="death-score">0</b></div>
+      <div class="pause-actions row">
+        <button id="btn-retry" class="btn-primary">TENTAR DE NOVO</button>
+        <button id="btn-death-menu" class="btn-ghost">MENU PRINCIPAL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ VITÓRIA ============ -->
+  <div id="victory" class="screen victory-screen">
+    <div class="victory-glow"></div>
+    <div class="victory-card">
+      <div class="victory-tag">EXTRAÇÃO CONFIRMADA</div>
+      <h2>VOCÊ SOBREVIVEU</h2>
+      <p class="death-sub">O helicóptero corta a névoa. O setor 07 fica para trás — por enquanto.</p>
+      <div class="stats-grid">
+        <div><span>ABATES</span><b id="vic-kills">0</b></div>
+        <div><span>NA CABEÇA</span><b id="vic-head">0</b></div>
+        <div><span>TEMPO</span><b id="vic-time">0:00</b></div>
+        <div><span>PRECISÃO</span><b id="vic-acc">0%</b></div>
+      </div>
+      <div class="death-score">PONTUAÇÃO FINAL <b id="vic-score">0</b></div>
+      <div class="pause-actions row">
+        <button id="btn-again" class="btn-primary">JOGAR NOVAMENTE</button>
+        <button id="btn-victory-menu" class="btn-ghost">MENU PRINCIPAL</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="rotate" class="rotate-warning">
+    <div class="rot-icon">⟳</div>
+    <div class="rot-title">GIRE O CELULAR</div>
+    <p>DEADZONE foi desenhado para ser jogado na horizontal, com as duas mãos.</p>
+    <button id="btn-rotate-skip" class="btn-ghost" style="margin-top:14px">JOGAR ASSIM MESMO</button>
+  </div>
+</div>
+<script type="module" src="js/game.js"></script>
+</body>
+</html>
