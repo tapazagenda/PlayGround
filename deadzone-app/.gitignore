@@ -1,0 +1,8 @@
+# Saídas do build (o APK é distribuído fora do repositório)
+build/
+*.apk
+*.idsig
+local.properties
+# Assets são gerados por scripts/sync-assets.mjs a partir de ../deadzone
+src/main/assets/deadzone/
+.apkforge/

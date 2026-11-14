@@ -1,0 +1,10 @@
+{
+  "namespace": "com.tapazagenda.deadzone",
+  "applicationId": "com.tapazagenda.deadzone",
+  "minSdk": 24,
+  "targetSdk": 34,
+  "compileSdk": 34,
+  "versionCode": 1,
+  "versionName": "1.0",
+  "java": 17
+}

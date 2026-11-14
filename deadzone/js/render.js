@@ -128,6 +128,9 @@ export class Renderer {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
+    // Mantém a arma em primeira pessoa proporcional em tela larga (celular deitado).
+    const ws = this.game && this.game.weapons;
+    if (ws && ws.applyViewAspect) ws.applyViewAspect(this.camera.aspect);
     if (this.composer) {
       this.composer.setSize(w, h);
       if (this.bloom) this.bloom.setSize(w, h);

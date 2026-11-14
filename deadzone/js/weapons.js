@@ -113,17 +113,26 @@ export function buildWeaponModel(id) {
   let muzzle;
 
   if (id === 'pistol') {
-    root.add(box(0.06, 0.075, 0.30, dark, 0, 0.045, -0.06));
-    root.add(box(0.055, 0.045, 0.26, steel, 0, 0.1, -0.1));
-    const grip = box(0.052, 0.16, 0.085, black, 0, -0.055, 0.03, 0.28, 0, 0);
+    // M9 em proporção real (0,22 m de comprimento): o modelo antigo tinha
+    // 0,30 m e a telha do slide ficava maior que o corpo, virando uma tábua.
+    root.add(box(0.029, 0.033, 0.185, dark, 0, 0.016, -0.052));        // slide
+    root.add(box(0.026, 0.010, 0.170, steel, 0, 0.036, -0.050));       // topo do slide
+    root.add(box(0.027, 0.022, 0.115, black, 0, -0.012, -0.040));      // armação
+    root.add(box(0.024, 0.020, 0.030, black, 0, -0.014, -0.098));      // boca do cano
+    const grip = box(0.030, 0.100, 0.050, black, 0, -0.068, 0.030, 0.24, 0, 0);
     root.add(grip);
-    root.add(box(0.02, 0.03, 0.05, steel, 0, 0.055, 0.09, -0.3, 0, 0));
-    root.add(box(0.012, 0.012, 0.09, steel, 0, 0.128, -0.2));
-    muzzle = muzzleTip(root, 0, 0.1, -0.24);
-    root.userData.mag = box(0.045, 0.12, 0.06, black, 0, -0.07, 0.02, 0.2, 0, 0);
+    root.add(box(0.032, 0.008, 0.048, dark, 0, -0.118, 0.045, 0.24, 0, 0)); // base do carregador
+    root.add(box(0.026, 0.006, 0.052, black, 0, -0.030, -0.010));      // guarda do gatilho
+    root.add(box(0.007, 0.022, 0.008, steel, 0, -0.020, 0.000, -0.25, 0, 0)); // gatilho
+    root.add(box(0.005, 0.008, 0.010, steel, 0, 0.048, 0.030));        // alça de mira
+    root.add(box(0.004, 0.007, 0.008, steel, 0, 0.048, -0.132));       // massa de mira
+    root.add(box(0.010, 0.012, 0.026, steel, 0.016, 0.010, -0.010));   // retém do carregador
+    muzzle = muzzleTip(root, 0, 0.014, -0.150);
+    root.userData.mag = box(0.024, 0.088, 0.040, black, 0, -0.062, 0.030, 0.24, 0, 0);
     root.add(root.userData.mag);
-    addHand(root, new THREE.Vector3(0.005, -0.055, 0.035), false, 1.0);
-    addHand(root, new THREE.Vector3(-0.045, -0.03, 0.02), true, 0.95);
+    // mão direita no punho, esquerda apoiando
+    addHand(root, new THREE.Vector3(0.004, -0.070, 0.048), false, 1.0);
+    addHand(root, new THREE.Vector3(-0.026, -0.062, 0.006), true, 0.92);
   } else if (id === 'smg') {
     root.add(box(0.075, 0.09, 0.34, dark, 0, 0.04, -0.04));
     root.add(box(0.05, 0.05, 0.18, black, 0, 0.02, -0.28));
@@ -225,7 +234,10 @@ export class WeaponSystem {
     this.vmLight = new THREE.PointLight(0xffe6c8, 1.8, 3.0, 2);
     this.vmLight.position.set(0.1, 0.25, 0.35);
     this.camera.add(this.vmLight);
-    this.viewRoot.scale.setScalar(1);
+    // Ajuste por aspecto (celular deitado = 2.0~2.3, desktop = 1.78).
+    // Em tela larga a arma recua e encolhe um pouco: sem isso ela vira um
+    // bloco gigante no canto inferior direito.
+    this.applyViewAspect(camera.aspect || 1.78);
 
     this.models = {};
     this.current = 'pistol';
@@ -245,6 +257,22 @@ export class WeaponSystem {
     this.owned = ['knife', 'pistol'];
     this._buildAll();
     this.equip('pistol', true);
+  }
+
+  /** Encaixa o viewmodel no enquadramento atual (chamado no resize).
+   *  Referência 16:9. Em celular deitado (2.0–2.4) a arma fica afastada e um
+   *  pouco menor: perto demais ela vira um bloco ocupando meia tela. */
+  applyViewAspect(aspect) {
+    const a = clamp(aspect || 1.78, 1.0, 2.6);
+    const wide = clamp((a - 1.60) / 0.55, 0, 1);   // 0 = estreito, 1 = celular deitado
+    this.vmScaleBase = lerp(0.95, 0.84, wide);
+    this.vmZBase = lerp(-0.36, -0.46, wide);
+    this.vmXBase = lerp(0.115, 0.180, wide);
+    this.vmYBase = lerp(-0.105, -0.135, wide);
+    // leve três quartos: vê-se a lateral da arma e o cano aponta para a mira
+    this.vmYaw = lerp(0.05, 0.09, wide);
+    this.vmPitch = 0.03;
+    this.viewRoot.scale.setScalar(this.vmScaleBase);
   }
 
   _buildAll() {
@@ -467,10 +495,15 @@ export class WeaponSystem {
     if (!m) return;
 
     const aiming = this.aimAmount;
+    // base ajustada por aspecto (ver applyViewAspect): x/y/z ficam coerentes
+    // com a escala para a arma continuar legível em qualquer tela.
+    const bx = this.vmXBase != null ? this.vmXBase : 0.19;
+    const by = this.vmYBase != null ? this.vmYBase : -0.21;
+    const bz = this.vmZBase != null ? this.vmZBase : -0.47;
     const basePos = {
-      x: lerp(0.19, 0.0, aiming) + (this.current === 'knife' ? 0.02 : 0),
-      y: lerp(-0.21, -0.072, aiming) + (this.current === 'knife' ? -0.02 : 0),
-      z: lerp(-0.47, -0.36, aiming)
+      x: lerp(bx, 0.0, aiming) + (this.current === 'knife' ? 0.02 : 0),
+      y: lerp(by, -0.066, aiming) + (this.current === 'knife' ? -0.02 : 0),
+      z: lerp(bz, -0.36, aiming)
     };
     if (this.current === 'sniper' && aiming > 0.75) basePos.z = -0.3;
 
@@ -493,8 +526,8 @@ export class WeaponSystem {
       basePos.z + recoilBack
     );
     this.viewRoot.rotation.set(
-      recoilRot + this.swayY * 0.5,
-      this.swayX * 0.8,
+      (this.vmPitch || 0) + recoilRot + this.swayY * 0.5,
+      (this.vmYaw || 0) + this.swayX * 0.8,
       this.kick * 0.06 + (this.current === 'knife' ? Math.sin(this.meleeT * 22) * this.meleeT * 1.4 : 0)
     );
     if (this.meleeT > 0) {
