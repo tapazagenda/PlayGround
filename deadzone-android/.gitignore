@@ -1,0 +1,12 @@
+# Gradle / Android
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Web assets do DEADZONE sao copiados no build por scripts/sync-assets.mjs
+app/src/main/assets/deadzone/

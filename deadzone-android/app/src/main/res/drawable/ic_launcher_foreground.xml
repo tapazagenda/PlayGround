@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icone do DEADZONE: reticula de mira + silhueta de infectado, sobre fundo escuro.
+     Vetorial (sem PNGs), funciona em adaptive icon e em pre-API 26. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- reticula: anel externo tracejado -->
+    <path
+        android:strokeColor="#7BE0A0"
+        android:strokeAlpha="0.45"
+        android:strokeWidth="2"
+        android:pathData="M54,20a34,34 0 1,0 0,68a34,34 0 1,0 0,-68z"
+        android:fillColor="@android:color/transparent" />
+
+    <!-- marcas de mira -->
+    <path android:fillColor="#B7E04A" android:pathData="M52,12h4v10h-4z" />
+    <path android:fillColor="#B7E04A" android:pathData="M52,86h4v10h-4z" />
+    <path android:fillColor="#B7E04A" android:pathData="M12,52h10v4h-10z" />
+    <path android:fillColor="#B7E04A" android:pathData="M86,52h10v4h-10z" />
+
+    <!-- silhueta de zumbi (cabeca + ombros) -->
+    <path
+        android:fillColor="#C9D8B8"
+        android:pathData="M54,30m-9,0a9,9 0 1,0 18,0a9,9 0 1,0 -18,0" />
+    <path
+        android:fillColor="#C9D8B8"
+        android:pathData="M40,44h28v18c0,4 -3,7 -7,7h-14c-4,0 -7,-3 -7,-7z" />
+    <!-- braco erguido -->
+    <path
+        android:fillColor="#A8B899"
+        android:pathData="M66,46l4,-2l10,-14l4,3l-10,15l-5,3z" />
+
+    <!-- olhos brilhantes -->
+    <path android:fillColor="#B7E04A" android:pathData="M50,28.5h3v3h-3z" />
+    <path android:fillColor="#B7E04A" android:pathData="M55,28.5h3v3h-3z" />
+
+    <!-- marca de sangue -->
+    <path
+        android:fillColor="#D9452E"
+        android:fillAlpha="0.85"
+        android:pathData="M54,66l3,6l-2,4l-3,-5l-2,-5z" />
+</vector>
