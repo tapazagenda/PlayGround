@@ -506,6 +506,24 @@ body.in-game #hud { opacity: 1; }
 .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
 .set-title { font-family: var(--font-mono); font-size: 9px; letter-spacing: .24em; color: var(--acid); margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid var(--line); }
 .set-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 7px 0; font-size: 13px; letter-spacing: .04em; color: #c6d0c0; align-items: center; }
+.set-group:only-of-type, .settings-grid > .set-group { min-width: 0; }
+@media (max-height: 620px) {
+  .settings-grid { gap: 6px 20px; }
+  .set-title { margin-bottom: 5px; padding-bottom: 3px; }
+  .set-row { padding: 3px 0; font-size: 11.5px; gap: 2px 8px; }
+  .set-row input[type=range] { height: 16px; }
+  .set-row input[type=range]::-webkit-slider-thumb { width: 11px; height: 11px; margin-top: -4px; }
+  .set-note { margin-top: 5px; font-size: 7px; }
+  .switch { width: 34px; height: 16px; }
+  .switch::after { width: 10px; height: 10px; }
+  .switch.on::after { left: 20px; }
+  .panel-head h2 { font-size: 19px; }
+  .panel-head { margin-bottom: 8px; }
+  .panel-actions { margin-top: 10px; }
+  .help-grid { gap: 12px; }
+  .help-col ul { font-size: 10.5px; gap: 3px; }
+  .help-col h3 { margin-bottom: 5px; }
+}
 .set-row b { font-family: var(--font-mono); font-size: 10px; color: var(--acid); font-weight: 500; }
 .set-row input[type=range] {
   grid-column: 1 / -1; width: 100%; height: 22px; -webkit-appearance: none; background: transparent; margin: 0;
@@ -567,10 +585,16 @@ body.in-game #hud { opacity: 1; }
   .rotate-warning { display: flex; }
   /* deixa o painel de rotação mais bonito e com botão de emergência */
 }
+/* mouse + teclado: os botões de toque saem de cena (não atrapalham a mira) */
 @media (hover: hover) and (pointer: fine) {
-  .touch-layer { opacity: .5; }
-  .touch-layer .touch-left, .touch-layer .touch-right { opacity: .55; }
-  .touch-layer .touch-left:hover, .touch-layer .touch-right:hover { opacity: 1; }
+  .touch-layer { display: none; }
+}
+
+/* aparelho de toque: munição e slots sempre acima do cluster de botões */
+@media (pointer: coarse) {
+  .hud-br { bottom: calc(176px + var(--safe-b)); right: calc(12px + var(--safe-r)); }
+  .icon-rail { position: absolute; top: calc(100% + 2px); right: 0; }
+  .hud-tr { padding-bottom: 2px; }
 }
 
 /* ===== celular deitado: evita que a munição fique sob os botões ===== */

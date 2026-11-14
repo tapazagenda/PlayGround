@@ -447,34 +447,53 @@ export function buildZombieMesh(type = 'walker', seed = 1) {
 /* ---------------- humano (sobrevivente NPC) ---------------- */
 export function buildHumanMesh(seed = 1, outfit = {}) {
   const rng = makeRng(seed);
-  const skin = new THREE.MeshStandardMaterial({ color: 0xa87a5c, roughness: 0.75 });
-  const shirt = new THREE.MeshStandardMaterial({ color: outfit.shirt ?? 0x3c5a3a, roughness: 0.85 });
-  const pants = new THREE.MeshStandardMaterial({ color: outfit.pants ?? 0x2a2e33, roughness: 0.9 });
-  const vest = new THREE.MeshStandardMaterial({ color: 0x2e3a2c, roughness: 0.8, metalness: 0.1 });
+  const fab = fabricTexture();
+  const skin = new THREE.MeshStandardMaterial({ color: 0xb08060, roughness: 0.72 });
+  const shirt = new THREE.MeshStandardMaterial({ color: outfit.shirt ?? 0x46603f, roughness: 0.88, map: fab });
+  const pants = new THREE.MeshStandardMaterial({ color: outfit.pants ?? 0x2f3439, roughness: 0.92, map: fab });
+  const vest = new THREE.MeshStandardMaterial({ color: 0x2e3a2c, roughness: 0.78, metalness: 0.12 });
+  const boot = new THREE.MeshStandardMaterial({ color: 0x1c1c1d, roughness: 0.9 });
   const root = new THREE.Group();
   const body = new THREE.Group(); root.add(body);
-  const torso = new THREE.Group(); torso.position.y = 1.2; body.add(torso);
-  const chest = box(0.5, 0.55, 0.28, shirt, 0, 0.16, 0); torso.add(chest);
-  torso.add(box(0.54, 0.4, 0.32, vest, 0, 0.16, 0));
-  const head = new THREE.Group(); head.position.y = 0.55; torso.add(head);
-  const skull = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 10), skin);
-  skull.position.y = 0.1; skull.scale.set(0.95, 1.08, 1); head.add(skull);
-  head.add(box(0.22, 0.09, 0.22, new THREE.MeshStandardMaterial({ color: 0x2b2620, roughness: 1 }), 0, 0.2, 0));
+  // cintura + quadril (dá silhueta de pessoa, não de boneco de blocos)
+  const torso = new THREE.Group(); torso.position.y = 1.16; body.add(torso);
+  torso.add(box(0.38, 0.24, 0.24, shirt, 0, -0.12, 0));
+  const chest = box(0.46, 0.5, 0.27, shirt, 0, 0.14, 0); torso.add(chest);
+  torso.add(box(0.49, 0.36, 0.3, vest, 0, 0.13, 0));           // colete
+  torso.add(box(0.4, 0.12, 0.31, vest, 0, -0.05, 0));          // cinto tático
+  const strap = box(0.1, 0.44, 0.31, vest, 0.12, 0.16, 0); strap.rotation.z = 0.22; torso.add(strap);
+  // mochila
+  torso.add(box(0.34, 0.4, 0.16, new THREE.MeshStandardMaterial({ color: 0x3a3a2e, roughness: 0.95 }), 0, 0.16, -0.2));
+  const head = new THREE.Group(); head.position.y = 0.52; torso.add(head);
+  const neck = box(0.13, 0.1, 0.13, skin, 0, 0.0, 0); head.add(neck);
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(0.128, 14, 12), skin);
+  skull.position.y = 0.11; skull.scale.set(0.92, 1.06, 1.02); head.add(skull);
+  // maxilar e nariz
+  head.add(box(0.13, 0.07, 0.06, skin, 0, 0.055, 0.1));
+  head.add(box(0.035, 0.045, 0.04, skin, 0, 0.095, 0.125));
+  // cabelo / boné
+  const hairM = new THREE.MeshStandardMaterial({ color: pick([0x2b2118, 0x3d2f22, 0x1e1a16, 0x4a3a28]), roughness: 0.95 });
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.135, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), hairM);
+  cap.position.y = 0.135; cap.scale.set(0.98, 1.0, 1.02); head.add(cap);
+  if (rng() > 0.5) head.add(box(0.2, 0.02, 0.13, hairM, 0, 0.132, 0.14)); // aba do boné
+  // óculos de sol
+  head.add(box(0.19, 0.045, 0.02, new THREE.MeshStandardMaterial({ color: 0x0b0d0e, roughness: 0.25, metalness: 0.6 }), 0, 0.112, 0.122));
   const arms = [];
   for (const side of [-1, 1]) {
-    const shoulder = new THREE.Group(); shoulder.position.set(side * 0.33, 0.34, 0); torso.add(shoulder);
-    shoulder.add(box(0.14, 0.4, 0.14, shirt, 0, -0.19, 0));
-    const elbow = new THREE.Group(); elbow.position.y = -0.38; shoulder.add(elbow);
-    elbow.add(box(0.12, 0.36, 0.12, skin, 0, -0.17, 0));
+    const shoulder = new THREE.Group(); shoulder.position.set(side * 0.28, 0.3, 0); torso.add(shoulder);
+    shoulder.add(box(0.125, 0.34, 0.125, shirt, 0, -0.16, 0));
+    const elbow = new THREE.Group(); elbow.position.y = -0.32; shoulder.add(elbow);
+    elbow.add(box(0.105, 0.3, 0.105, skin, 0, -0.14, 0));
+    elbow.add(box(0.1, 0.09, 0.1, vest, 0, -0.28, 0));   // luva
     arms.push({ shoulder, elbow, side });
   }
   const legs = [];
   for (const side of [-1, 1]) {
-    const hip = new THREE.Group(); hip.position.set(side * 0.13, 1.02, 0); body.add(hip);
-    hip.add(box(0.18, 0.46, 0.18, pants, 0, -0.23, 0));
+    const hip = new THREE.Group(); hip.position.set(side * 0.12, 1.02, 0); body.add(hip);
+    hip.add(box(0.165, 0.46, 0.17, pants, 0, -0.23, 0));
     const knee = new THREE.Group(); knee.position.y = -0.46; hip.add(knee);
-    knee.add(box(0.16, 0.44, 0.16, pants, 0, -0.22, 0));
-    knee.add(box(0.18, 0.1, 0.28, new THREE.MeshStandardMaterial({ color: 0x1c1c1d }), 0, -0.44, 0.05));
+    knee.add(box(0.15, 0.42, 0.155, pants, 0, -0.21, 0));
+    knee.add(box(0.17, 0.11, 0.26, boot, 0, -0.42, 0.045));
     legs.push({ hip, knee, side });
   }
   body.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });

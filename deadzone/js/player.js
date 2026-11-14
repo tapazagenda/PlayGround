@@ -432,11 +432,14 @@ export class Player {
         leg.hip.rotation.x = Math.sin(wp + (i ? Math.PI : 0)) * amp;
         leg.knee.rotation.x = -Math.max(0, -Math.cos(wp + (i ? Math.PI : 0))) * amp * 1.3 - 0.05;
       });
+      const aimT = this.game.weapons.aimAmount;
       h.arms[0].shoulder.rotation.x = -1.1 - this.pitch * 0.9;
-      h.arms[0].shoulder.rotation.z = 0.15;
+      h.arms[0].shoulder.rotation.z = 0.15 + aimT * 0.22;
+      h.arms[0].shoulder.rotation.y = -0.15 - aimT * 0.25;
       h.arms[1].shoulder.rotation.x = -1.2 - this.pitch * 0.9;
-      h.arms[1].shoulder.rotation.z = -0.1;
-      h.arms.forEach(a => { a.elbow.rotation.x = -0.5; });
+      h.arms[1].shoulder.rotation.z = -0.1 - aimT * 0.3;
+      h.arms[1].shoulder.rotation.y = 0.1 + aimT * 0.2;
+      h.arms.forEach(a => { a.elbow.rotation.x = -0.5 + aimT * 0.2; });
       h.torso.rotation.x = this.crouching ? 0.28 : (this.sprinting ? 0.16 : 0.03);
       h.head.rotation.x = -this.pitch * 0.7;
       h.body.position.y = this.crouching ? -0.55 : (moving ? Math.abs(Math.sin(wp)) * 0.03 : 0);
@@ -470,8 +473,10 @@ export class Player {
       cam.rotation.z = -this.vel.x * Math.cos(this.yaw) * 0 + Math.sin(this.bobT) * 0.0035 * bobbing;
       this.game.weapons.viewRoot.visible = !dying;
     } else {
-      // 3ª pessoa: câmera atrás por cima do ombro
-      const wantDist = 3.6 + this.pitch * 1.2;
+      // 3ª pessoa: câmera atrás por cima do ombro (aproxima ao mirar)
+      const aiming = this.game.weapons.aimAmount;
+      const shoulder = 0.42 + aiming * 0.3;
+      const wantDist = 3.6 + this.pitch * 1.2 - aiming * 1.15;
       const targetY = this.pos.y + 1.55 + this.pitch * 1.2;
       const dirX = Math.sin(this.yaw) * Math.cos(this.pitch);
       const dirY = -Math.sin(this.pitch);
@@ -483,9 +488,9 @@ export class Player {
       const wall = this.game.world.raycastWalls(from, dir, wantDist + 0.5);
       dist = Math.min(dist, Math.max(0.8, wall - 0.3));
       cam.position.set(
-        this.pos.x + dir.x * dist + Math.cos(this.yaw) * 0.42,
+        this.pos.x + dir.x * dist + Math.cos(this.yaw) * shoulder,
         targetY + dir.y * dist + 0.12,
-        this.pos.z + dir.z * dist - Math.sin(this.yaw) * 0.42
+        this.pos.z + dir.z * dist - Math.sin(this.yaw) * shoulder
       );
       cam.rotation.set(this.pitch, this.yaw, 0, 'YXZ');
       // na 3ª pessoa a arma aparece nas mãos do avatar (sem viewmodel)
