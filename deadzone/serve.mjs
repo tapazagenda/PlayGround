@@ -12,6 +12,7 @@ const HOST = process.env.HOST || '0.0.0.0';
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
@@ -35,11 +36,15 @@ createServer(async (req, res) => {
     if (!file.startsWith(ROOT)) { res.writeHead(403).end('403'); return; }
     const info = await stat(file).catch(() => null);
     if (!info || !info.isFile()) { res.writeHead(404, { 'content-type': 'text/plain' }).end('404'); return; }
+    const ext = extname(file).toLowerCase();
+    const base = file.split(/[\\/]/).pop();
+    // HTML, manifest e o service worker precisam ser sempre revalidados.
+    const shouldRevalidate = ext === '.html' || ext === '.webmanifest' || base === 'sw.js';
     const body = await readFile(file);
     res.writeHead(200, {
-      'content-type': TYPES[extname(file).toLowerCase()] || 'application/octet-stream',
+      'content-type': TYPES[ext] || 'application/octet-stream',
       'content-length': body.length,
-      'cache-control': extname(file) === '.html' ? 'no-cache' : 'public, max-age=3600',
+      'cache-control': shouldRevalidate ? 'no-cache' : 'public, max-age=3600',
     });
     res.end(body);
   } catch (err) {

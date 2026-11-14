@@ -7,9 +7,23 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="DEADZONE" />
 <meta name="description" content="DEADZONE — Apocalipse Zumbi em primeira e terceira pessoa. Sobreviva à horda em um mundo 3D completo." />
 <title>DEADZONE — Protocolo de Sobrevivência</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+<link rel="preload" as="script" href="js/game.js" crossorigin="anonymous" />
 <link rel="stylesheet" href="css/style.css" />
+<script>
+  // Service worker: deixa o jogo jogável offline depois da primeira visita.
+  // Só em http(s) — em file:// o navegador bloqueia.
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* offline opcional */ });
+    });
+  }
+</script>
 </head>
 <body>
 <div id="app" class="landscape-guard">
