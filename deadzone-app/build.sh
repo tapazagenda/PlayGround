@@ -60,9 +60,18 @@ say "java: $("$JAVA_HOME/bin/java" -version 2>&1 | head -1)"
 ECJ="$TOOLS/ecj.jar"
 if [ ! -f "$ECJ" ]; then
   say "baixando ecj (compilador Eclipse)…"
-  curl -fsSL -o "$ECJ" \
-    "https://raw.githubusercontent.com/eclipse-jdt/eclipse.jdt.core/master/org.eclipse.jdt.core/ecj.jar" \
-    || curl -fsSL -o "$ECJ" "https://github.com/NorbertXYZ/eclipse-maven/raw/master/org/eclipse/jdt/ecj/3.46.100/ecj-3.46.100.jar"
+  # Pela API de blobs do GitHub: raw.githubusercontent.com está bloqueado neste
+  # ambiente, e o jar (3,3 MB) passa pelo endpoint de blobs sem o limite do
+  # contents?base64.
+  ECJ_SHA="${ECJ_BLOB_SHA:-36f8b96067d4fcb4122aa33cb246d0230730a85b}"
+  curl -fsSL -H "Accept: application/vnd.github.raw" -o "$ECJ" \
+    "https://api.github.com/repos/NorbertXYZ/eclipse-maven/git/blobs/$ECJ_SHA"
+  python3 - "$ECJ" <<'PY'
+import sys, zipfile
+with zipfile.ZipFile(sys.argv[1]) as z:
+    if not any(n.endswith("batch/Main.class") for n in z.namelist()):
+        sys.exit("ecj.jar baixado não é o compilador")
+PY
 fi
 export ECJ_JAR="$ECJ"
 
@@ -73,9 +82,10 @@ if [ ! -x "$AAPT2" ]; then
   APKTOOL_JAR="$TOOLS/apktool.jar"
   if [ ! -f "$APKTOOL_JAR" ]; then
     npm pack apktool-jar --pack-destination "$TOOLS" >/dev/null 2>&1
-    tar xzf "$TOOLS"/apktool-jar-*.tgz -C "$TOOLS" package/bin/apktool_*.jar
-    mv "$TOOLS"/package/bin/apktool_*.jar "$APKTOOL_JAR"
+    tar xzf "$TOOLS"/apktool-jar-*.tgz -C "$TOOLS" package/bin
+    mv "$(ls "$TOOLS"/package/bin/apktool_*.jar | head -1)" "$TOOLS/apktool.jar"
     rm -rf "$TOOLS/package" "$TOOLS"/apktool-jar-*.tgz
+    APKTOOL_JAR="$TOOLS/apktool.jar"
   fi
   python3 - "$APKTOOL_JAR" "$AAPT2" <<'PY'
 import sys, zipfile
