@@ -35,13 +35,14 @@ studio-tz-android/
 ├── build.gradle.kts
 ├── gradle.properties
 ├── gradle/wrapper/gradle-wrapper.properties
+├── scripts/build-apk.sh                # build do APK sem Gradle
 └── app/
     ├── build.gradle.kts
     ├── proguard-rules.pro
     └── src/main/
         ├── AndroidManifest.xml
-        ├── java/com/tapazagenda/studiotz/MainActivity.kt   # WebView + ponte de download
-        ├── assets/studio-tz/                              # o app web (offline)
+        ├── java/com/tapazagenda/studiotz/MainActivity.java  # WebView + ponte de download
+        ├── assets/studio-tz/                                # o app web (offline)
         │   ├── index.html
         │   ├── css/app.css
         │   └── js/  (three.min.js vendorado + motor do Studio Tz)
@@ -50,22 +51,24 @@ studio-tz-android/
 
 ## Build
 
-O APK é gerado pelo GitHub Actions (`.github/workflows/build-studio-tz-apk.yml`):
-
-- Actions → **Build Studio Tz APK** → *Run workflow*, ou um push em
-  `studio-tz-android/**`.
-- O artifact **studio-tz-debug-apk** contém `app-debug.apk`.
-
-O app é 100% offline — não há etapa de download de assets no build.
-
-Localmente (com Android SDK instalado):
+O APK é construído **sem Gradle**, só com o toolchain oficial do Android
+(aapt2 + d8 + zipalign + apksigner) e um JDK 17:
 
 ```bash
 cd studio-tz-android
-gradle wrapper --gradle-version 8.7
-./gradlew assembleDebug
+JAVA_HOME=/caminho/do/jdk-17 \
+ANDROID_SDK_ROOT=/caminho/do/android-sdk \
+./scripts/build-apk.sh
 # saída: app/build/outputs/apk/debug/app-debug.apk
 ```
+
+O script compila os recursos (aapt2), compila o Java puro (javac contra
+`android.jar`), dexa (d8), empacota dex + assets e assina (apksigner,
+chave de debug). O app é 100% offline — nada é baixado no build.
+
+> Também existe um workflow `.github/workflows/build-studio-tz-apk.yml`
+> (build via GitHub Actions) pronto para quando a conexão do GitHub
+> tiver a permissão `workflows` liberada.
 
 ## Notas técnicas
 
