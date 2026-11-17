@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Luna"
+rootProject.name = "Studio Tz"
 include(":app")

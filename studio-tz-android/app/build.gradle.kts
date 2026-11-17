@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.tapazagenda.luna"
+    namespace = "com.tapazagenda.studiotz"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.tapazagenda.luna"
+        applicationId = "com.tapazagenda.studiotz"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -39,11 +39,6 @@ android {
 
     buildFeatures {
         buildConfig = true
-    }
-
-    // .vrm / .vrma / .glb precisam entrar nos assets sem recompressao
-    androidResources {
-        noCompress.addAll(listOf("vrm", "vrma", "glb", "gltf"))
     }
 
     packaging {

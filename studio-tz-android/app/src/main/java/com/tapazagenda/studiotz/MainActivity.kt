@@ -1,19 +1,18 @@
-package com.tapazagenda.luna
+package com.tapazagenda.studiotz
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.pm.PackageManager
+import android.app.DownloadManager
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.view.WindowManager
-import android.webkit.PermissionRequest
-import android.webkit.WebChromeClient
+import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -22,7 +21,27 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
 
-    private val recordAudioRequestCode = 1001
+    /** Ponte JS -> Android: salva o vídeo renderizado pelo Studio Tz. */
+    class StudioBridge(private val context: Context) {
+        @JavascriptInterface
+        fun download(url: String, filename: String) {
+            try {
+                val request = DownloadManager.Request(Uri.parse(url))
+                    .setDestinationUri(
+                        Uri.parse(
+                            "file://${Environment.getExternalStorageDirectory()}/Download/$filename"
+                        )
+                    )
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .setTitle("Studio Tz — $filename")
+                    .setMimeType("video/webm")
+                val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                dm.enqueue(request)
+            } catch (_: Exception) {
+                // se falhar, a página ainda oferece o link de download manual
+            }
+        }
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,8 +72,7 @@ class MainActivity : AppCompatActivity() {
             allowFileAccess = true
             allowContentAccess = true
 
-            // Necessario para o WebView carregar o .vrm / imagens / modulos
-            // a partir de file:///android_asset (origem file://)
+            // O app roda inteiro de file:///android_asset (offline)
             @Suppress("DEPRECATION")
             allowFileAccessFromFileURLs = true
             @Suppress("DEPRECATION")
@@ -68,9 +86,10 @@ class MainActivity : AppCompatActivity() {
             displayZoomControls = false
             useWideViewPort = true
             loadWithOverviewMode = true
-            javaScriptCanOpenWindowsAutomatically = true
             textZoom = 100
         }
+
+        webView.addJavascriptInterface(StudioBridge(this), "StudioBridge")
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
@@ -79,29 +98,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        webView.webChromeClient = object : WebChromeClient() {
-            // Microfone (STT) dentro do WebView
-            override fun onPermissionRequest(request: PermissionRequest) {
-                runOnUiThread {
-                    val wantsAudio = request.resources.any {
-                        it == PermissionRequest.RESOURCE_AUDIO_CAPTURE
-                    }
-                    if (wantsAudio && hasRecordAudioPermission()) {
-                        request.grant(request.resources)
-                    } else if (wantsAudio) {
-                        requestRecordAudioPermission()
-                        request.deny()
-                    } else {
-                        request.deny()
-                    }
-                }
-            }
-        }
-
-        // Botao voltar: navega no historico ou fecha
+        // Botao voltar: fecha o app (o app usa navegacao interna)
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (webView.canGoBack()) {
+                if (webView.canGoBack() && !webView.url.contains("studio-tz")) {
                     webView.goBack()
                 } else {
                     isEnabled = false
@@ -110,25 +110,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        requestRecordAudioPermission()
-
-        webView.loadUrl("file:///android_asset/luna/index.html")
-    }
-
-    private fun hasRecordAudioPermission(): Boolean =
-        ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.RECORD_AUDIO
-        ) == PackageManager.PERMISSION_GRANTED
-
-    private fun requestRecordAudioPermission() {
-        if (!hasRecordAudioPermission()) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.RECORD_AUDIO),
-                recordAudioRequestCode
-            )
-        }
+        webView.loadUrl("file:///android_asset/studio-tz/index.html")
     }
 
     override fun onPause() {

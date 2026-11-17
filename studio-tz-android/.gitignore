@@ -1,0 +1,12 @@
+# Gradle / Android
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# O app Studio Tz (web) embarcado entra no build diretamente
+# em app/src/main/assets/studio-tz/ — nada externo para baixar.

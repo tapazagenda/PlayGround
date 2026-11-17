@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0B0B12">
+<title>Studio Tz</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- Stage 3D sempre presente (cena de estúdio atrás do UI) -->
+<canvas id="stage"></canvas>
+<div id="stage-veil"></div>
+
+<!-- Topo global -->
+<header id="topbar">
+  <button id="btn-home" class="icon-btn" title="Início">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>
+  </button>
+  <div id="topbar-title">Studio Tz</div>
+  <button id="btn-orientation" class="icon-btn" title="Tela">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>
+  </button>
+</header>
+
+<!-- ======== TELA: INÍCIO ======== -->
+<section id="screen-home" class="screen active">
+  <div class="hero">
+    <div class="hero-badge">ESTÚDIO DE ANIMAÇÃO</div>
+    <h1>Studio <span>Tz</span></h1>
+    <p>Crie animações cinematográficas estilo Minecraft direto do celular.<br>Roteiro &rarr; cenas &rarr; vídeo. Sem PC, sem voz, 100% original.</p>
+  </div>
+
+  <div class="section-head">
+    <h2>Seus projetos</h2>
+    <button id="btn-new-project" class="btn primary small">+ Novo</button>
+  </div>
+
+  <div id="projects-grid" class="projects-grid">
+    <div class="empty-card" id="projects-empty">Nenhum projeto ainda.<br>Crie o primeiro e comece a animar.</div>
+  </div>
+
+  <div class="hint-card">
+    <div class="hint-icon">🎬</div>
+    <div>
+      <strong>Dica:</strong> escreva o roteiro com as commands da aba
+      <em>Roteiro</em> (cena, personagem, camera, falar, anima). O Studio Tz
+      monta as cenas e filma automaticamente.
+    </div>
+  </div>
+</section>
+
+<!-- ======== TELA: PROJETO ======== -->
+<section id="screen-project" class="screen">
+  <div class="project-head">
+    <input id="project-name" class="project-name-input" type="text" maxlength="40" placeholder="Nome do projeto">
+    <div class="orientation-pills">
+      <button class="pill" data-orient="landscape">🖥 Deitado 16:9</button>
+      <button class="pill" data-orient="portrait">📱 Em pé 9:16</button>
+    </div>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="script">Roteiro</button>
+    <button class="tab" data-tab="characters">Personagens</button>
+    <button class="tab" data-tab="music">Música</button>
+    <button class="tab" data-tab="render">Render</button>
+  </nav>
+
+  <!-- ABA: ROTEIRO -->
+  <div class="tab-panel active" id="tab-script">
+    <div class="script-toolbar">
+      <button class="tool-btn" data-insert="cena:plains">Cena</button>
+      <button class="tool-btn" data-insert="personagem:">Personagem</button>
+      <button class="tool-btn" data-insert="camera:medium">Câmera</button>
+      <button class="tool-btn" data-insert="falar:">Falar</button>
+      <button class="tool-btn" data-insert="anima:idle">Animação</button>
+      <button class="tool-btn" data-insert="musica:epica">Música</button>
+      <button class="tool-btn" data-insert="efeito:hit">Efeito</button>
+      <button class="tool-btn" data-insert="corte">Corte</button>
+    </div>
+
+    <div class="script-editor-wrap">
+      <textarea id="script-editor" spellcheck="false"
+        placeholder="Exemplo de roteiro:&#10;&#10;cena:plains&#10;personagem: Herói, default:1&#10;camera:wide&#10;musica:epica&#10;escena: 6&#10;falar: Herói: A missão começou.&#10;anima: Herói: walk&#10;cena:nether&#10;efeito:portal&#10;camera:close"></textarea>
+    </div>
+
+    <div class="script-actions">
+      <button id="btn-sketch" class="btn ghost">✨ Gerar esboço do prompt</button>
+      <button id="btn-preview" class="btn secondary">▶ Pré-visualizar</button>
+      <button id="btn-render" class="btn primary">🎬 Renderizar vídeo</button>
+    </div>
+
+    <details class="ref-card">
+      <summary>Comandos do roteiro</summary>
+      <div class="ref-grid">
+        <div><code>cena:</code> plains, floresta, deserto, vila, nether, oceano</div>
+        <div><code>personagem:</code> Nome, skinID</div>
+        <div><code>camera:</code> close, medium, wide, orbit, follow</div>
+        <div><code>falar:</code> Nome: texto (subtítulo + boca)</div>
+        <div><code>anima:</code> idle, walk, attack, hit, wave, look</div>
+        <div><code>musica:</code> epica, triste, acao, off</div>
+        <div><code>efeito:</code> hit, portal, fogo</div>
+        <div><code>escena:</code> segundos &middot; <code>corte</code> = corte brusco</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ABA: PERSONAGENS -->
+  <div class="tab-panel" id="tab-characters">
+    <div class="section-head">
+      <h2>Skins</h2>
+      <button id="btn-import-skin" class="btn primary small">+ Importar skin</button>
+    </div>
+    <input type="file" id="skin-file" accept="image/png" hidden>
+    <div id="skin-list" class="skin-list"></div>
+
+    <div class="section-head" style="margin-top:18px">
+      <h2>Elenco do roteiro</h2>
+    </div>
+    <div id="cast-list" class="cast-list">
+      <div class="empty-card">Adicione personagens no roteiro com comandos <code>personagem:</code>.</div>
+    </div>
+    <p class="hint-text">Toque em uma skin para visualizá-la no estúdio. As skins importadas são guardadas no app e usadas em todos os projetos, mantendo o personagem <strong>consistente por toda a série</strong>.</p>
+  </div>
+
+  <!-- ABA: MÚSICA -->
+  <div class="tab-panel" id="tab-music">
+    <div class="section-head"><h2>Trilha</h2></div>
+    <div id="music-list" class="music-list"></div>
+    <div class="section-head" style="margin-top:18px"><h2>Efeitos disponíveis</h2></div>
+    <div class="ref-grid">
+      <div><code>efeito: hit</code> — impacto de golpe</div>
+      <div><code>efeito: portal</code> — portal se abrindo</div>
+      <div><code>efeito: fogo</code> — chamas ascendendo</div>
+    </div>
+    <p class="hint-text">A trilha é sintetizada pelo app — nada é baixado e o vídeo sai sem voz, como você quer. Você pode trocar a música no roteiro a qualquer momento.</p>
+  </div>
+
+  <!-- ABA: RENDER -->
+  <div class="tab-panel" id="tab-render">
+    <div class="render-card">
+      <div class="render-icon">🎬</div>
+      <h2>Vídeo</h2>
+      <p id="render-status" class="render-status">Nenhum vídeo renderizado ainda.</p>
+      <div id="render-progress-wrap" class="progress-wrap hidden">
+        <div class="progress-bar"><div id="render-progress" class="progress-fill"></div></div>
+        <div id="render-progress-text" class="progress-text">0%</div>
+      </div>
+      <div id="render-result" class="render-result hidden">
+        <video id="render-video" controls playsinline></video>
+        <div class="render-actions">
+          <a id="btn-download" class="btn primary" download="studio-tz.webm">⬇ Baixar vídeo</a>
+          <button id="btn-share-render" class="btn ghost">📤 Compartilhar</button>
+        </div>
+      </div>
+    </div>
+    <p class="hint-text">A renderização é feita em tempo real no celular: cada cena é "filmada" pelo estúdio enquanto a música toca. Quanto maior o roteiro, mais tempo leva — o app avisa o progresso.</p>
+  </div>
+</section>
+
+<!-- ======== MODAL: NOVO PROJETO ======== -->
+<div id="modal-new" class="modal hidden">
+  <div class="modal-card">
+    <h3>Novo projeto</h3>
+    <label class="field">
+      <span>Nome</span>
+      <input id="new-name" type="text" maxlength="40" placeholder="Ex: A Saga do Herói">
+    </label>
+    <label class="field">
+      <span>Tela do vídeo</span>
+      <div class="orientation-pills">
+        <button class="pill" data-orient="landscape">🖥 Deitado (16:9)</button>
+        <button class="pill" data-orient="portrait">📱 Em pé (9:16)</button>
+      </div>
+    </label>
+    <div class="modal-actions">
+      <button id="modal-cancel" class="btn ghost">Cancelar</button>
+      <button id="modal-create" class="btn primary">Criar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== OVERLAY: PREVIEW / RENDER ======== -->
+<div id="stage-overlay" class="stage-overlay hidden">
+  <div class="stage-top">
+    <div id="stage-mode-label">Pré-visualização</div>
+    <div id="stage-time" class="stage-time">0:00</div>
+    <button id="btn-stop" class="btn ghost small">■ Encerrar</button>
+  </div>
+  <div id="stage-subtitle" class="stage-subtitle"></div>
+  <div class="stage-bottom">
+    <button id="btn-pause" class="btn ghost small">⏸ Pausar</button>
+    <div id="stage-progress" class="progress-bar wide"><div id="stage-progress-fill" class="progress-fill"></div></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script src="js/three.min.js"></script>
+<script src="js/idb.js"></script>
+<script src="js/skins.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/script.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
