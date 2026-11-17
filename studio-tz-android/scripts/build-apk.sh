@@ -76,7 +76,8 @@ echo "==> 4/6 Dexando (d8)"
   --output "$WORK/dex"
 
 echo "==> 5/6 Empacotando dex + assets + zipalign"
-( cd "$WORK" && zip -q base.apk dex/classes.dex )
+# o dex deve ficar na RAIZ do APK como classes.dex (sem prefixo de diretorio)
+( cd "$WORK/dex" && zip -q "$WORK/base.apk" classes.dex )
 ( cd "$APP/src/main" && zip -qr "$WORK/base.apk" assets )
 "$ZIPALIGN" -f 4 "$WORK/base.apk" "$WORK/aligned.apk"
 
